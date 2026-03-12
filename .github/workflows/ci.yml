@@ -1,30 +1,26 @@
 name: ci
 
 on:
-  workflow_dispatch:      # Manuel tetikleme izni
-  push:                   # Her koda bir şey eklediğinde çalışır
+  workflow_dispatch:
+  push:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    # Build işlemi için geniş alan açıyoruz (ESP-IDF ve Docker için gerekli)
     - name: Cleanup runner
       run: |
-        df -h
         sudo rm -rf /opt/microsoft /usr/local/.ghcup /usr/local/julia* /usr/share/dotnet /usr/share/swift /usr/lib/llvm*
-        df -h
 
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        submodules: recursive # Retro-Go alt modüllerini (Core'lar) çekmek için şart
+        submodules: recursive
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    # Docker imajını oluşturuyoruz (Derleme burada yapılıyor)
     - name: Build
       uses: docker/build-push-action@v6
       with:
@@ -33,24 +29,20 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         load: true
-        # ESP32-S3 ve istediğin Core'ları Docker'a argüman olarak geçiyoruz
+        # ✅ BURASI KRİTİK: S3 olduğunu GitHub'a burada zorla öğretiyoruz
         build-args: |
-          TARGET=esp32-s3
-          CORES=doom,retro
+          TARGET=esp32s3
+          TARGET_CHIP=esp32s3
 
-    # ✅ KRİTİK DÜZELTME: Dosyaları Docker içinden "Bul ve Çıkar"
     - name: Extract binaries from docker image
       run: |
-        mkdir -p build_output
-        # find komutuyla tüm .bin ve .fw dosyalarını tarayıp build_output klasörüne kopyalıyoruz
-        docker run --rm -v $(pwd)/build_output:/out retro-go:latest sh -c "find . -name '*.bin' -exec cp {} /out/ \; && find . -name '*.fw' -exec cp {} /out/ \;"
-        echo "Kopyalanan dosyalar listesi:"
-        ls -R build_output
+        mkdir -p build
+        # S3 için derlenen tüm parçaları bulup dışarı aktarır
+        docker run --rm -v $(pwd)/build:/out retro-go:latest sh -c "find . -name '*.bin' -exec cp {} /out/ \;"
+        ls -R build
 
-    # Dosyaları (firmware.bin ve .fw) artifacts olarak yükle
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: kynexos-retro-firmware
-        path: build_output/
-        if-no-files-found: error
+        name: kynexos-s3-binaries
+        path: build/
