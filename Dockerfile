@@ -14,5 +14,7 @@ RUN cd /opt/esp/idf && \
 # Build
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
+    idf.py set-target esp32s3 && \
+    python rg_tool.py --target=esp32-s3-devkit release && \
 	python rg_tool.py --target=odroid-go release && \
 	python rg_tool.py --target=mrgc-g32 release
