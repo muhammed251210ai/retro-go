@@ -1,27 +1,31 @@
-name: ci
+name: KynexOs-RetroGo-CI
 
 on:
   workflow_dispatch:
   push:
+
+env:
+  # MUHAMMED: 2026 standartlarına uygun Node.js 24 zorlaması
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Cleanup runner
+    - name: Runner Temizliği
       run: |
         sudo rm -rf /opt/microsoft /usr/local/.ghcup /usr/local/julia* /usr/share/dotnet /usr/share/swift /usr/lib/llvm*
 
-    - name: Checkout repository
+    - name: Depoyu Klonla
       uses: actions/checkout@v4
       with:
         submodules: recursive
 
-    - name: Set up Docker Buildx
+    - name: Docker Buildx Kurulumu
       uses: docker/setup-buildx-action@v3
 
-    - name: Build
+    - name: Docker Imajini Derle
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -29,20 +33,20 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         load: true
-        # ✅ BURASI KRİTİK: S3 olduğunu GitHub'a burada zorla öğretiyoruz
+        # S3 donanımı için parametreleri gönderiyoruz
         build-args: |
           TARGET=esp32s3
           TARGET_CHIP=esp32s3
 
-    - name: Extract binaries from docker image
+    - name: Bin Dosyalarini Docker'dan Kurtar
       run: |
-        mkdir -p build
-        # S3 için derlenen tüm parçaları bulup dışarı aktarır
-        docker run --rm -v $(pwd)/build:/out retro-go:latest sh -c "find . -name '*.bin' -exec cp {} /out/ \;"
-        ls -R build
+        mkdir -p output
+        # MUHAMMED: Sadece asıl firmware dosyalarını çekiyoruz
+        docker run --rm -v $(pwd)/output:/out retro-go:latest sh -c "cp build/*.bin /out/ 2>/dev/null || find . -maxdepth 3 -name '*.bin' -exec cp {} /out/ \;"
+        ls -R output
 
-    - name: Upload artifacts
+    - name: Binaries Paketini Yukle
       uses: actions/upload-artifact@v4
       with:
-        name: kynexos-s3-binaries
-        path: build/
+        name: Kynex-S3-RetroGo-Pack
+        path: output/
