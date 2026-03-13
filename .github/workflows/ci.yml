@@ -1,11 +1,11 @@
-name: KynexOs-RetroGo-CI
+name: KynexOs-RetroGo-Speedmaster
 
 on:
   workflow_dispatch:
   push:
 
 env:
-  # MUHAMMED: 2026 standartlarına uygun Node.js 24 zorlaması
+  # MUHAMMED: 2026 Haziran standartı Node.js 24 zorlaması aktif.
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
@@ -33,7 +33,6 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         load: true
-        # S3 donanımı için parametreleri gönderiyoruz
         build-args: |
           TARGET=esp32s3
           TARGET_CHIP=esp32s3
@@ -41,12 +40,12 @@ jobs:
     - name: Bin Dosyalarini Docker'dan Kurtar
       run: |
         mkdir -p output
-        # MUHAMMED: Sadece asıl firmware dosyalarını çekiyoruz
-        docker run --rm -v $(pwd)/output:/out retro-go:latest sh -c "cp build/*.bin /out/ 2>/dev/null || find . -maxdepth 3 -name '*.bin' -exec cp {} /out/ \;"
+        # MUHAMMED: Hata almamak için tüm alt dizinlerdeki binleri tarayıp çeker
+        docker run --rm -v $(pwd)/output:/out retro-go:latest sh -c "find . -name '*.bin' -exec cp {} /out/ \;"
         ls -R output
 
     - name: Binaries Paketini Yukle
       uses: actions/upload-artifact@v4
       with:
-        name: Kynex-S3-RetroGo-Pack
+        name: Kynex-S3-UltraFast-Pack
         path: output/
