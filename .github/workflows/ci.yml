@@ -1,8 +1,6 @@
 # **************************************************************************
-# * Kynex Sovereign - Pure WiFi CI v216.0
+# * Kynex Sovereign - USB Enabled CI v217.0
 # * Geliştirici: Muhammed (Kynex)
-# * Donanım: ESP32-S3 N16R8 (16MB)
-# * Görev: Sadece Launcher ve sistem dosyalarını üretir.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -32,10 +30,10 @@ jobs:
           docker cp temp-container:/kynex_out/partition-table.bin ./partitions.bin
           docker rm temp-container
 
-      - name: Launcher Paketini Yukle
+      - name: Kynex Paketini Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_RetroGo_WiFi_Edition
+          name: Kynex_Sovereign_USB_Package
           path: |
             launcher.bin
             bootloader.bin
