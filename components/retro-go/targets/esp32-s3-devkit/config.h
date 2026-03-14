@@ -1,8 +1,8 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Compiler Final Fix)
+/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Ghost Protocol)
  * Geliştirici: Muhammed (Kynex)
  * Donanım: KynexBoard ESP32-S3 N16R8
- * Özellikler: Glitch-Free SPI (20MHz), 180-Degree Flip Fix (0x68), Dual-Joy Matrix
- * Hata Düzeltme: Task definition moved to C file to prevent duplicated symbol error.
+ * Özellikler: Glitch-Free SPI (20MHz), 180-Degree Fix (0x68), Dual-Joy Matrix
+ * Hata Düzeltme: Macro-injection moved to C file to prevent Emulator compilation errors.
  * Talimat: Asla satır silmeden, optimize etmeden, tam ve tek parça kod.
  */
 
@@ -54,7 +54,7 @@
     ILI9341_CMD(0xC1, 0x12);                                                                                    \
     ILI9341_CMD(0xC5, 0x32, 0x3C);                                                                              \
     ILI9341_CMD(0xC7, 0x91);                                                                                    \
-    ILI9341_CMD(0x36, 0x68);                 /* 180 Derece Fix */                                               \
+    ILI9341_CMD(0x36, 0x68);                                                                                    \
     ILI9341_CMD(0xB1, 0x00, 0x10);                                                                              \
     ILI9341_CMD(0xB6, 0x0A, 0xA2);                                                                              \
     ILI9341_CMD(0xF6, 0x01, 0x30);                                                                              \
@@ -93,8 +93,7 @@
 #define RG_GPIO_TP_CS               GPIO_NUM_16
 #define RG_GPIO_TP_IRQ              GPIO_NUM_NC
 
-// MUHAMMED: SISTEM BASLATICI MAKROSU (Gorev rg_system.c içinde tanımlanacak)
-extern void kynex_os_switch_task(void *arg);
-#define RG_TARGET_INIT() xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
+// MUHAMMED: Buradaki geçiş kodlarını derleyiciyi bozmaması için tamamen temizledik.
+// Kod artık sadece rg_system.c içinde yaşayacak.
 
 #endif /* _RG_TARGET_CONFIG_H_ */
