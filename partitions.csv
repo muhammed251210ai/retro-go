@@ -2,6 +2,7 @@
 # * Kynex Sovereign - Retro-Go Master Partition Table (N16R8 - 16MB)
 # * Geliştirici: Muhammed (Kynex)
 # * Donanım: ESP32-S3 N16R8 (16MB Flash)
+# * Not: 16MB Flash için optimize edilmiş güvenli alanlar.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod.
 # **************************************************************************
 # Name,   Type, SubType, Offset,  Size, Flags
