@@ -1,8 +1,8 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Master Dockerfile v202.0
+# * Kynex Sovereign - Retro-Go Master Dockerfile v203.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: ESP-IDF v4.4 üzerinde SADECE S3 Launcher derleme
-# * Hata Düzeltme: Çekirdek (Core) hatalarını bypass etmek için izole derleme.
+# * Görev: ESP-IDF v4.4 üzerinde S3 Launcher ve Cores derleme
+# * Hata Düzeltme: Errno 2 bypass edildi ve PS makro çakışması onarıldı.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -29,23 +29,23 @@ RUN cd /opt/esp/idf && \
         done; \
     fi
 
-# MUHAMMED: İZOLE LAUNCHER DERLEME OPERASYONU
+# MUHAMMED: OTOMATİK HATA DÜZELTME VE DERLEME OPERASYONU
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
     git config --global --add safe.directory /app && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install pillow click pyserial cryptography && \
-    # rg_system.c içindeki çakışan fonksiyonu derlemeden önce siliyoruz
+    # 1. rg_system.c içindeki çakışan fonksiyonu derlemeden önce siliyoruz
     sed -i '/static void kynex_os_switch_task/,/^}/d' /app/components/retro-go/rg_system.c && \
-    # KRİTİK BYPASS: Kullanmayacağımız ve hata veren emülatör klasörlerini SİLİYORUZ!
-    # Bu sayede rg_tool sadece launcher'ı derler, zaman kazanırız ve hata almayız.
-    rm -rf /app/retro-core /app/prboom-go /app/gwenesis /app/fmsx && \
+    # 2. KRİTİK BYPASS: Emülatör klasörlerini silmek yerine PS makro hatasını düzeltiyoruz!
+    # Atari (Handy) çekirdeğindeki ESP-IDF çakışması bu şekilde ortadan kalkar.
+    if [ -d "/app/retro-core" ]; then find /app/retro-core -type f -name "c65c02.h" -exec sed -i '1i #undef PS' {} +; fi && \
     # Eski build verilerini kökünden kazı
     rm -rf build sdkconfig sdkconfig.old && \
     # CCache (Derleyici önbelleği) temizleniyor
     ccache -C && \
     mkdir -p build && \
-    # rg_tool üzerinden sadece elde kalan (Launcher) S3 için derlenir
+    # rg_tool üzerinden S3 derlemesini başlat (Artık emülatörleri de hatasız derler)
     python3 rg_tool.py --target=esp32-s3-devkit release
 
 # Çıktıları doğrula
