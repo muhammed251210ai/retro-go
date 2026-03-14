@@ -72,7 +72,7 @@ jobs:
           ${{ env.MKFATFS_EXE }} -c $(pwd)/storage/data/ -s 8323072 ffat.bin
           echo "Paketleme tamamlandi."
 
-      - name: Storage Paketini Yukle (Adres: 0x810000)
+      - name: Storage Paketini Yukle
         uses: actions/upload-artifact@v4
         with:
           name: 02_Storage_Package
