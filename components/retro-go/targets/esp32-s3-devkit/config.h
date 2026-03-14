@@ -1,4 +1,4 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Independent Mode)
+/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Independent Launcher)
  * Geliştirici: Muhammed (Kynex)
  * Donanım: KynexBoard ESP32-S3 N16R8
  * Özellikler: Axis Correction, 180-Degree Flip, KynexOs Escape Task
@@ -18,7 +18,7 @@
 // Target definition
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3"
 
-// Storage
+// Storage (Sadece bu bölgeyi tarar)
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
 
@@ -28,7 +28,7 @@
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// Video (20MHz Stability)
+// Video (20MHz)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
