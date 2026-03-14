@@ -1,5 +1,10 @@
 #include "rg_system.h"
 
+#include "esp_ota_ops.h"
+#include "esp_partition.h"
+#include "driver/gpio.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 #include <sys/time.h>
 #include <stdarg.h>
 #include <assert.h>
@@ -26,6 +31,29 @@
 
 #define RG_STRUCT_MAGIC 0x12345678
 #define RG_LOGBUF_SIZE 2048
+
+// MUHAMMED: KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
+static void kynex_os_switch_task(void *arg) {
+    gpio_set_direction(GPIO_NUM_8, GPIO_MODE_INPUT); // Kynex Buton Pini (Bunu kendin değiştirebilirsin)
+    gpio_set_pull_mode(GPIO_NUM_8, GPIO_PULLUP_ONLY);
+    int kynex_timer = 0;
+    while(1) {
+        if(gpio_get_level(GPIO_NUM_8) == 0) { // Butona basıldı mı?
+            kynex_timer++;
+            if(kynex_timer > 20) { // 2 Saniye basılı tutulursa
+                const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+                if(kynex_part) { 
+                    esp_ota_set_boot_partition(kynex_part); 
+                    esp_restart(); // KynexOs'a geçiş yap!
+                }
+            }
+        } else { 
+            kynex_timer = 0; 
+        }
+        vTaskDelay(pdMS_TO_TICKS(100)); 
+    }
+}
+
 typedef struct
 {
     uint32_t magicWord;
@@ -529,6 +557,13 @@ rg_app_t *rg_system_init(int sampleRate, const rg_handlers_t *handlers, void *_u
         update_boot_config(RG_APP_LAUNCHER, NULL, NULL, 0);
 
     rg_task_create("rg_sysmon", &system_monitor_task, NULL, 3 * 1024, RG_TASK_PRIORITY_5, -1);
+    
+    // =================================================================================
+    // MUHAMMED: İŞTE O SİHİRLİ TETİKLEYİCİ!
+    // Sistemin kalbine KynexOs dinleme görevini enjekte ediyoruz.
+    // =================================================================================
+    xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
+
     app.initialized = true;
 
     update_memory_statistics();
