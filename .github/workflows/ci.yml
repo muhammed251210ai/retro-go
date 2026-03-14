@@ -1,51 +1,41 @@
-name: KynexOs-RetroGo-Speedmaster
+name: KynexOs Sovereign Build v183.0
 
-on:
-  workflow_dispatch:
-  push:
+on: [push]
 
 env:
-  # MUHAMMED: 2026 Haziran standartı Node.js 24 zorlaması aktif.
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Runner Temizliği
-      run: |
-        sudo rm -rf /opt/microsoft /usr/local/.ghcup /usr/local/julia* /usr/share/dotnet /usr/share/swift /usr/lib/llvm*
+      - name: Kodu Cek
+        uses: actions/checkout@v4
 
-    - name: Depoyu Klonla
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: PlatformIO Onbellegini Kur
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio
+          key: ${{ runner.os }}-platformio-v183
 
-    - name: Docker Buildx Kurulumu
-      uses: docker/setup-buildx-action@v3
+      - name: Python Kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Docker Imajini Derle
-      uses: docker/build-push-action@v6
-      with:
-        context: .
-        tags: retro-go:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        load: true
-        build-args: |
-          TARGET=esp32s3
-          TARGET_CHIP=esp32s3
+      - name: Derleme ve Birleştirme
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade platformio
+          # MUHAMMED: Bu komut her şeyi derler ve Python scripti ile tek dosya yapar
+          pio run
+          pio run --target buildfs
 
-    - name: Bin Dosyalarini Docker'dan Kurtar
-      run: |
-        mkdir -p output
-        # MUHAMMED: Hata almamak için tüm alt dizinlerdeki binleri tarayıp çeker
-        docker run --rm -v $(pwd)/output:/out retro-go:latest sh -c "find . -name '*.bin' -exec cp {} /out/ \;"
-        ls -R output
-
-    - name: Binaries Paketini Yukle
-      uses: actions/upload-artifact@v4
-      with:
-        name: Kynex-S3-UltraFast-Pack
-        path: output/
+      - name: Master Firmware Yukle (Tek Dosya)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kynex_Sovereign_Master_Image
+          path: .pio/build/esp32-s3-devkitc-1/MASTER_KYNEX_SOVEREIGN.bin
+          compression-level: 9
