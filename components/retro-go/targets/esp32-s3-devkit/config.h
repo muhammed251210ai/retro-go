@@ -1,8 +1,8 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Crystal Clear Fix)
+/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Dual-Stick Master)
  * Geliştirici: Muhammed (Kynex)
  * Donanım: KynexBoard ESP32-S3 N16R8
- * Özellikler: Glitch-Free SPI (20MHz), Fixed SPI Pinout, Rotated Joysticks
- * Hata Düzeltme: Reduced SPI Speed to prevent screen artifacting/lines
+ * Özellikler: Glitch-Free SPI (20MHz), 180 Degree Flip Fix, Right-Joy Button Matrix
+ * Hata Düzeltme: MADCTL 0xE8 applied for correct orientation, ADC Button Mapping
  * Talimat: Asla satır silmeden, optimize etmeden, tam ve tek parça kod.
  */
 
@@ -12,20 +12,19 @@
 // Target definition
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3"
 
-// Storage (SD Kart Yok - Dahili FFat Bölümü)
+// Storage (Dahili FFat Bölümü)
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
 
-// Audio (Muhammed'in Pin 18 Hoparlör Modu)
-#define RG_AUDIO_USE_INT_DAC        0   // S3'te dahili DAC yok
-#define RG_AUDIO_USE_EXT_DAC        0   // Harici I2S devre dışı
-#define RG_AUDIO_USE_PWM            1   // PWM Audio Aktif
+// Audio (Pin 18 Hoparlör Modu)
+#define RG_AUDIO_USE_INT_DAC        0   
+#define RG_AUDIO_USE_EXT_DAC        0   
+#define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// Video (Çizgili Ekran Çözümü - Hız 20MHz'e düşürüldü)
-#define RG_SCREEN_DRIVER            0   // 0 = ILI9341
+// Video (Çizgili Ekran Çözümü - Hız 20MHz)
+#define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
-// MUHAMMED: ÇİZGİLERİN SEBEBİ HIZDI! 40M veya 80M ekranı bozuyordu, 20M ile cam gibi olacak.
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
 #define RG_SCREEN_BACKLIGHT         1
 #define RG_SCREEN_WIDTH             320
@@ -34,7 +33,7 @@
 #define RG_SCREEN_VISIBLE_AREA      {0, 0, 0, 0}
 #define RG_SCREEN_SAFE_AREA         {0, 0, 0, 0}
 
-// LCD SPI PİNLERİ (Muhammed'in Fiziksel Donanımı)
+// LCD SPI PİNLERİ
 #define RG_GPIO_LCD_MISO            GPIO_NUM_13
 #define RG_GPIO_LCD_MOSI            GPIO_NUM_11
 #define RG_GPIO_LCD_CLK             GPIO_NUM_12
@@ -43,7 +42,7 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// Ekran İlkleme Komutları (90 Derece Yatay Mod Fix)
+// MUHAMMED: EKRAN TERSLİĞİ BURADA ÇÖZÜLDÜ! (0x28 yerine 0xE8 kullanıldı)
 #define RG_SCREEN_INIT()                                                                                        \
     ILI9341_CMD(0xCF, 0x00, 0xc3, 0x30);                                                                        \
     ILI9341_CMD(0xED, 0x64, 0x03, 0x12, 0x81);                                                                  \
@@ -51,11 +50,11 @@
     ILI9341_CMD(0xCB, 0x39, 0x2c, 0x00, 0x34, 0x02);                                                            \
     ILI9341_CMD(0xF7, 0x20);                                                                                    \
     ILI9341_CMD(0xEA, 0x00, 0x00);                                                                              \
-    ILI9341_CMD(0xC0, 0x1B);                 /* Power control   //VRH[5:0] */                                   \
-    ILI9341_CMD(0xC1, 0x12);                 /* Power control   //SAP[2:0];BT[3:0] */                           \
+    ILI9341_CMD(0xC0, 0x1B);                 /* Power control   */                                              \
+    ILI9341_CMD(0xC1, 0x12);                 /* Power control   */                                              \
     ILI9341_CMD(0xC5, 0x32, 0x3C);           /* VCM control */                                                  \
     ILI9341_CMD(0xC7, 0x91);                 /* VCM control2 */                                                 \
-    ILI9341_CMD(0x36, 0x28);                 /* 90 Derece Yatay Mod Fix (BGR) */                                \
+    ILI9341_CMD(0x36, 0xE8);                 /* MUHAMMED FIX: 180 Derece Döndürme (MY=1, MX=1, BGR=1) */        \
     ILI9341_CMD(0xB1, 0x00, 0x10);           /* Frame Rate Control */                                           \
     ILI9341_CMD(0xB6, 0x0A, 0xA2);           /* Display Function Control */                                     \
     ILI9341_CMD(0xF6, 0x01, 0x30);                                                                              \
@@ -65,20 +64,24 @@
     ILI9341_CMD(0xE1, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F);
 
 
-// Input (Joystickler Muhammed'in 90 Derece Sağ Montajına Göre Fixlendi)
+// MUHAMMED: DUAL-JOYSTICK KONTROL MATRİSİ
 #define RG_GAMEPAD_ADC_MAP {\
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1024},\
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3072, 4096},\
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},\
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096},\
+    /* SOL JOYSTICK (YÖN KONTROLLERİ) */ \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    /* Pin 5 Y-Axis İleri */ \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, /* Pin 5 Y-Axis Geri */ \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1024},    /* Pin 4 X-Axis Sol */ \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3072, 4096}, /* Pin 4 X-Axis Sağ */ \
+    /* SAĞ JOYSTICK (AKSİYON BUTONLARI - A/B/X/Y) */ \
+    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    /* Pin 15 Y-Axis İleri = X Butonu */ \
+    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, /* Pin 15 Y-Axis Geri = B Butonu */ \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1024},    /* Pin 7 X-Axis Sol = Y Butonu */ \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3072, 4096}, /* Pin 7 X-Axis Sağ = A Butonu */ \
 }
 
 #define RG_GAMEPAD_GPIO_MAP {\
-    {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
-    {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
-    {RG_KEY_A,      .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
-    {RG_KEY_B,      .num = GPIO_NUM_7,  .pullup = 1, .level = 0}, \
-    {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
+    {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, /* Sol Joystick Basma (Click) */ \
+    {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, /* Sağ Joystick Basma (Click) */ \
+    {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, /* ESP32 Boot Butonu = Menü / Çıkış */ \
 }
 
 // Battery
@@ -88,7 +91,7 @@
 #define RG_BATTERY_CALC_PERCENT(raw) (((raw) * 2.f - 3500.f) / (4200.f - 3500.f) * 100.f)
 #define RG_BATTERY_CALC_VOLTAGE(raw) ((raw) * 2.f * 0.001f)
 
-// Status LED (NC: Not Connected)
+// Status LED
 #define RG_GPIO_LED                 GPIO_NUM_NC
 
 // I2S Rezerve
