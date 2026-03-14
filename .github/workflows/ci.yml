@@ -1,8 +1,8 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Independent CI v197.0
+# * Kynex Sovereign - Retro-Go Independent CI v198.0
 # * Geliştirici: Muhammed (Kynex)
 # * Donanım: ESP32-S3 N16R8 (16MB)
-# * Hata Düzeltme: Line 36 indentation and YAML syntax fixed.
+# * Hata Düzeltme: VirtualEnv Python Dependencies Fix
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -11,7 +11,6 @@ name: RetroGo_Sovereign_CI
 on: [push]
 
 env:
-  # GitHub Actions 2026 standartları için Node.js 24 ayarı
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
