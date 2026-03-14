@@ -1,41 +1,54 @@
-name: KynexOs Sovereign Build v183.0
+# **************************************************************************
+# * Kynex Sovereign - Pure Retro-Go CI v191.0
+# * Geliştirici: Muhammed (Kynex)
+# * Donanım: ESP32-S3 N16R8 (16MB)
+# * Görev: Sadece Retro-Go Launcher ve sistem dosyalarını derler.
+# * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
+# **************************************************************************
+
+name: RetroGo_Independent_Build
 
 on: [push]
 
 env:
+  # GitHub Actions 2026 standartları için Node.js 24 ayarı
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  build:
+  # 🕹️ ANA İŞ: RETRO-GO DERLEME (Docker tabanlı ESP-IDF v4.4)
+  build-retro-go:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodu Cek
+      - name: Kodlari Cek
         uses: actions/checkout@v4
 
-      - name: PlatformIO Onbellegini Kur
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/pip
-            ~/.platformio
-          key: ${{ runner.os }}-platformio-v183
-
-      - name: Python Kur
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Derleme ve Birleştirme
+      - name: Retro-Go Derle (Dockerfile ile Docker Build)
         run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade platformio
-          # MUHAMMED: Bu komut her şeyi derler ve Python scripti ile tek dosya yapar
-          pio run
-          pio run --target buildfs
+          # Dockerfile dosyasının ana dizinde olduğunu varsayıyoruz
+          docker build -t retro-go-builder .
+          
+          # Konteynırı oluştur ama çalıştırma (/bin/true ile hemen durur)
+          docker run --name temp-container retro-go-builder /bin/true
+          
+          # Derlenen kritik sistem dosyalarını konteyner dışına kopyala
+          # Adres: 0x10000
+          docker cp temp-container:/app/build/launcher.bin ./launcher.bin
+          
+          # Adres: 0x0 (İlk uyandırma)
+          docker cp temp-container:/app/build/bootloader/bootloader.bin ./bootloader.bin
+          
+          # Adres: 0x8000 (Hafıza Rehberi)
+          docker cp temp-container:/app/build/partition_table/partition-table.bin ./partitions.bin
+          
+          # Konteynırı temizle
+          docker rm temp-container
 
-      - name: Master Firmware Yukle (Tek Dosya)
+      - name: Retro-Go Bin Dosyalarini Paketle
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_Master_Image
-          path: .pio/build/esp32-s3-devkitc-1/MASTER_KYNEX_SOVEREIGN.bin
+          name: RetroGo_Sovereign_Bins
+          path: |
+            launcher.bin
+            bootloader.bin
+            partitions.bin
           compression-level: 9
