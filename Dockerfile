@@ -1,8 +1,8 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Dockerfile v192.0
+# * Kynex Sovereign - Retro-Go Master Dockerfile v193.0
 # * Geliştirici: Muhammed (Kynex)
 # * Görev: ESP-IDF v4.4 üzerinde S3 Master derleme
-# * Hata Düzeltme: Python3 zorlaması ve bağımlılık garantisi eklendi.
+# * Hata Düzeltme: Git kütüphanesi ve Python bağımlılıkları eklendi.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -11,28 +11,36 @@ FROM espressif/idf:release-v4.4
 
 WORKDIR /app
 
-# Bağımlılıkları tek seferde kuruyoruz
-RUN apt-get update && apt-get install -y python3-pip && \
-    python3 -m pip install --upgrade pip && \
-    python3 -m pip install pillow click
+# MUHAMMED: Gerekli tüm sistem bağımlılıklarını kuruyoruz
+# git, rg_tool.py'nin versiyon çekmesi için şarttır!
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Proje dosyalarını Docker içine alıyoruz
+# MUHAMMED: Python bağımlılıklarını garantiye alıyoruz
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install pillow click pyserial cryptography
+
+# Proje dosyalarını Docker içine alıyoruz (.git klasörü dahil)
 ADD . /app
 
-# Yamaları Uygula (Panic hook ve SD Fix)
-# Dosyalar varsa yama yapar, yoksa hata vermeden geçer.
+# Yamaları Uygula (Eğer yama dosyaları tools/patches altında varsa)
 RUN cd /opt/esp/idf && \
-	if [ -f "/app/tools/patches/panic-hook (esp-idf 4).diff" ]; then patch --ignore-whitespace -p1 -i "/app/tools/patches/panic-hook (esp-idf 4).diff"; fi && \
-	if [ -f "/app/tools/patches/sdcard-fix (esp-idf 4).diff" ]; then patch --ignore-whitespace -p1 -i "/app/tools/patches/sdcard-fix (esp-idf 4).diff"; fi
+    if [ -d "/app/tools/patches" ]; then \
+        for f in /app/tools/patches/*.diff; do \
+            [ -e "$f" ] && patch --ignore-whitespace -p1 -i "$f" || echo "Yama atlandi: $f"; \
+        done; \
+    fi
 
-# MUHAMMED: Hata ve Hız Ayarı
+# MUHAMMED: Derleme Hazırlığı
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
-    # Eski build klasörünü temizleyip yeniden oluşturuyoruz (Exit status 2 fix)
+    # Her ihtimale karşı temiz bir build klasörü
     rm -rf build && \
     mkdir -p build && \
-    # Sadece senin S3 konsolun için derleme yapıyoruz
+    # Retro-Go'nun S3 Devkit hedefiyle release derlemesi
     python3 rg_tool.py --target=esp32-s3-devkit release
 
-# Derlenen dosyaları doğrula
+# Derlenen çıktıları listele (Hata ayıklama için)
 RUN ls -R build/
