@@ -1,8 +1,7 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Master CI v193.0
+# * Kynex Sovereign - Retro-Go Master CI v194.0
 # * Geliştirici: Muhammed (Kynex)
-# * Donanım: ESP32-S3 N16R8 (16MB)
-# * Hata Düzeltme: Submodule recursive derinliği artırıldı.
+# * Hata Düzeltme: Recursive submodule fetch fetch-depth fix.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -11,36 +10,29 @@ name: RetroGo_Sovereign_CI
 on: [push]
 
 env:
-  # 2026 standartları için Node.js 24 ayarı
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  # 🕹️ ANA GÖREV: DERLEME
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Kodlari Cek (Submoduller Dahil)
         uses: actions/checkout@v4
         with:
-          # MUHAMMED: Bu iki satır emülatörlerin eksiksiz gelmesini sağlar
           submodules: 'recursive'
           fetch-depth: 0
 
       - name: Docker ile Derleme Yap
         run: |
-          # Dockerfile'ı kullanarak MASTER imajı üret
+          # Dockerfile'i kullanarak S3 Launcher üret
           docker build -t retro-go-builder .
           
           # Konteynırdan çıktıları al
           docker run --name temp-container retro-go-builder /bin/true
           
-          # 0x10000 adresine basılacak ana launcher
+          # Dosyaları yerel dizine kopyala
           docker cp temp-container:/app/build/launcher.bin ./launcher.bin
-          
-          # 0x0 adresine basılacak bootloader
           docker cp temp-container:/app/build/bootloader/bootloader.bin ./bootloader.bin
-          
-          # 0x8000 adresine basılacak harita
           docker cp temp-container:/app/build/partition_table/partition-table.bin ./partitions.bin
           
           docker rm temp-container
