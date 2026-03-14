@@ -1,7 +1,7 @@
-/* * RetroGo Configuration - Kynex Sovereign Internal Flash Edition (v219.0)
+/* * RetroGo Configuration - Kynex Sovereign Recovery Fix Edition (v220.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Dual Analog Stick Fix, Internal FFat Storage, KynexOs Switch
- * Donanım: ESP32-S3 N16R8 (SD Kart DEVRE DIŞI)
+ * Özellikler: Fixed Orientation, High-Priority Button Poll, Internal FFat
+ * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
 
@@ -16,20 +16,20 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3-INTERNAL"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-RECOVERY-FIX"
 
-// STORAGE AYARLARI (DAHİLİ HAFIZA MODU - FFAT)
-#define RG_STORAGE_DRIVER           2   // 1: SD Card, 2: Internal Flash (FFat)
+// STORAGE (Dahili Hafıza - FFat)
+#define RG_STORAGE_DRIVER           2   
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
 
-// SES (PWM Pin 18)
+// AUDIO (PWM Pin 18)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        0   
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VİDEO (LCD Pinleri - Değiştirilmedi)
+// VIDEO (LCD Konfigürasyonu)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -43,24 +43,24 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// EKRAN DÜZELTMESİ (180 Derece Fix)
+// EKRAN DÜZELTMESİ (Fotoğraftaki dikey hali yatay yapma - 0x28 Landscape)
 #define RG_SCREEN_INIT()                                                                                        \
-    ILI9341_CMD(0x36, 0x68);                                                                                    \
-    ILI9341_CMD(0xB6, 0x0A, 0xA2);
+    ILI9341_CMD(0x36, 0x28);                                                                                    \
+    ILI9341_CMD(0xB6, 0x0A, 0x82);
 
-// ÇİFT ANALOG JOYSTICK HARİTASI (ADC1 KANALLARI KULLANILDI)
-// Sol Stick: GPIO 4 ve 5 | Sağ Stick: GPIO 2 ve 3 (Çakışma Önleyici)
+// ANALOG JOYSTICK (ADC1 KANALLARI - Pürüzsüzleştirilmiş Eşik Değerleri)
 #define RG_GAMEPAD_ADC_MAP {\
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1024},    \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3072, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 0, 1024},    \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 3072, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 3072, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 0, 1024},    \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3200, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3200, 4096}, \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 3200, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 3200, 4096}, \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 0, 800},     \
 }
 
+// FİZİKSEL BUTONLAR (Recovery Navigasyonu İçin Kritik)
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
