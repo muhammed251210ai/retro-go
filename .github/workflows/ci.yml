@@ -1,50 +1,54 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Independent CI v192.0
+# * Kynex Sovereign - Retro-Go Master CI v193.0
 # * Geliştirici: Muhammed (Kynex)
 # * Donanım: ESP32-S3 N16R8 (16MB)
-# * Hata Düzeltme: Submodule 'recursive' eklendi, exit code 1 engellendi.
+# * Hata Düzeltme: Submodule recursive derinliği artırıldı.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
-name: RetroGo_Independent_Build
+name: RetroGo_Sovereign_CI
 
 on: [push]
 
 env:
-  # GitHub Actions 2026 standartları için Node.js 24 ayarı
+  # 2026 standartları için Node.js 24 ayarı
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  # 🕹️ ANA İŞ: RETRO-GO DERLEME
-  build-retro-go:
+  # 🕹️ ANA GÖREV: DERLEME
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Kodlari Cek (Submoduller Dahil)
         uses: actions/checkout@v4
         with:
-          # MUHAMMED: Bu satır olmazsa emülatörler derlenemez!
+          # MUHAMMED: Bu iki satır emülatörlerin eksiksiz gelmesini sağlar
           submodules: 'recursive'
           fetch-depth: 0
 
-      - name: Retro-Go Derle (Dockerfile ile Docker Build)
+      - name: Docker ile Derleme Yap
         run: |
+          # Dockerfile'ı kullanarak MASTER imajı üret
           docker build -t retro-go-builder .
           
-          # Konteynırı oluştur
+          # Konteynırdan çıktıları al
           docker run --name temp-container retro-go-builder /bin/true
           
-          # Derlenen dosyaları dışarı al
+          # 0x10000 adresine basılacak ana launcher
           docker cp temp-container:/app/build/launcher.bin ./launcher.bin
+          
+          # 0x0 adresine basılacak bootloader
           docker cp temp-container:/app/build/bootloader/bootloader.bin ./bootloader.bin
+          
+          # 0x8000 adresine basılacak harita
           docker cp temp-container:/app/build/partition_table/partition-table.bin ./partitions.bin
           
-          # Temizlik
           docker rm temp-container
 
-      - name: Retro-Go Bin Dosyalarini Paketle
+      - name: Final Bin Dosyalarini Paketle
         uses: actions/upload-artifact@v4
         with:
-          name: RetroGo_Sovereign_Final_Bins
+          name: Kynex_RetroGo_S3_Final_Bins
           path: |
             launcher.bin
             bootloader.bin
