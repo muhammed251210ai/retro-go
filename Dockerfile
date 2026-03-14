@@ -1,18 +1,26 @@
 # **************************************************************************
-# * Kynex Sovereign - Internal Flash Master Dockerfile v219.0
+# * Kynex Sovereign - Recovery Breaker Dockerfile v220.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Launcher derleme ve Dahili FFat Otomatik Format desteği.
+# * Görev: Recovery Mode kilidini kırmak için zorunlu FFat formatı.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
+# ESP-IDF v4.4
 FROM espressif/idf:release-v4.4
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y python3-pip git ccache && rm -rf /var/lib/apt/lists/*
+# Gerekli sistem bağımlılıkları
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    git \
+    ccache \
+    && rm -rf /var/lib/apt/lists/*
 
+# Proje dosyalarını Docker içine aktarıyoruz
 ADD . /app
 
+# Yamaları Uygula
 RUN cd /opt/esp/idf && \
     if [ -d "/app/tools/patches" ]; then \
         for f in /app/tools/patches/*.diff; do \
@@ -20,24 +28,31 @@ RUN cd /opt/esp/idf && \
         done; \
     fi
 
+# MUHAMMED: KESİN ÇÖZÜM OPERASYONU (RECOVERY BYPASS)
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
     git config --global --add safe.directory /app && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install pillow click pyserial cryptography && \
-    # rg_system.c temizliği
+    # 1. Çakışan fonksiyonu derlemeden önce siliyoruz
     sed -i '/static void kynex_os_switch_task/,/^}/d' /app/components/retro-go/rg_system.c && \
-    # Depolama yolunu FFat olarak mühürle ve Otomatik Formatı aktif et
-    sed -i 's/\/sd/\/ffat/g' /app/components/retro-go/rg_storage.c || true && \
+    # 2. KRİTİK MÜDAHALE: Hafıza mount edilemezse SORMADAN format at! (Recovery ekranından kurtulmak için)
     sed -i 's/.format_if_mount_failed = false/.format_if_mount_failed = true/g' /app/components/retro-go/rg_storage.c && \
+    # 3. WiFi yolunu /sd'den /ffat'a zorla
+    sed -i 's/\/sd/\/ffat/g' /app/components/retro-go/rg_storage.c || true && \
+    # Eski build verilerini temizle
     rm -rf build sdkconfig sdkconfig.old && \
     ccache -C && \
+    # 4. AŞAMA: Ana derleme (Cores hatasını yoksay)
     (python3 rg_tool.py --target=esp32-s3-devkit release || true) && \
+    # 5. AŞAMA: Eksik parçaları (Bootloader/Partition) zorla üret
     cd /app/launcher && \
     idf.py -DRG_PROJECT_APP=launcher -DRG_BUILD_TARGET=RG_TARGET_ESP32_S3_DEVKIT -DRG_BUILD_RELEASE=1 bootloader partition-table && \
+    # 6. AŞAMA: Radar ile topla ve kasaya kilitle
     mkdir -p /kynex_out && \
     find /app -name "launcher.bin" -type f -exec cp {} /kynex_out/launcher.bin \; && \
     find /app -name "bootloader.bin" -type f -exec cp {} /kynex_out/bootloader.bin \; && \
     find /app -name "partition-table.bin" -type f -exec cp {} /kynex_out/partition-table.bin \;
 
+# Doğrulama
 RUN ls -la /kynex_out/
