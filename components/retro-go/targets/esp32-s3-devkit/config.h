@@ -1,7 +1,8 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Independent Launcher)
+/* * RetroGo Configuration - Kynex Sovereign S3 Edition (v199.0)
  * Geliştirici: Muhammed (Kynex)
  * Donanım: KynexBoard ESP32-S3 N16R8
  * Özellikler: Axis Correction, 180-Degree Flip, KynexOs Escape Task
+ * Hata Düzeltme: Redefinition (Çift tanımlama) hatası giderildi.
  * Talimat: Asla satır silmeden, optimize etmeden, tam ve tek parça kod.
  */
 
@@ -99,7 +100,7 @@
 #define RG_GPIO_TP_CS               GPIO_NUM_16
 #define RG_GPIO_TP_IRQ              GPIO_NUM_NC
 
-// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
+// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ - ARTIK SADECE BURADA YAŞAYACAK
 static inline void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_8, GPIO_MODE_INPUT); 
     gpio_set_pull_mode(GPIO_NUM_8, GPIO_PULLUP_ONLY);
@@ -116,6 +117,7 @@ static inline void kynex_os_switch_task(void *arg) {
     }
 }
 
+// Sistemi Başlatma Kancası
 #define RG_TARGET_INIT() xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
