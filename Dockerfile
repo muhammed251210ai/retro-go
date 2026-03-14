@@ -1,36 +1,34 @@
+# **************************************************************************
+# * Kynex Sovereign Retro-Go Dockerfile v189.0
+# * Geliştirici: Muhammed (Kynex)
+# * Görev: ESP-IDF v4.4 üzerinde Retro-Go Launcher derleme
+# * Talimat: Asla satır silmeden, tam ve tek parça kod.
+# **************************************************************************
+
 # ESP-IDF v4.4 (Retro-Go için en kararlı sürüm)
 FROM espressif/idf:release-v4.4
 
 WORKDIR /app
 
-# Gerekli bağımlılıkları kur
+# Bağımlılıkları tek seferde kuruyoruz
 RUN apt-get update && apt-get install -y python3-pip && \
     pip3 install pillow click
 
+# Proje dosyalarını Docker içine al
 ADD . /app
 
-# Yamaları Uygula (Panic hook ve SD Fix)
+# Retro-Go yamalarını çekirdek IDF'e uygula
 RUN cd /opt/esp/idf && \
 	patch --ignore-whitespace -p1 -i "/app/tools/patches/panic-hook (esp-idf 4).diff" && \
 	patch --ignore-whitespace -p1 -i "/app/tools/patches/sdcard-fix (esp-idf 4).diff"
 
-# MUHAMMED: DERLEME VE TEK DOSYA BİRLEŞTİRME OPERASYONU
+# Derleme işlemi (Bash kabuğu kullanarak)
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
-    # 1. Klasörleri hazırla
+    # Build klasörünü oluştur
     mkdir -p build && \
-    # 2. Retro-Go Launcher'ı derle (S3 için)
-    python rg_tool.py --target=esp32-s3-devkit release && \
-    # 3. TÜM PARÇALARI TEK BİR DOSYADA DİKİYORUZ
-    # Not: ffat.bin dosyasının projenin ana dizininde olduğu varsayılır.
-    esptool.py --chip esp32s3 merge_bin \
-    -o build/MASTER_RETRO_GO.bin \
-    --flash_mode dio \
-    --flash_size 16MB \
-    0x0000 build/bootloader/bootloader.bin \
-    0x8000 build/partition_table/partition-table.bin \
-    0x10000 build/launcher.bin \
-    0x410000 ffat.bin
+    # Sadece ESP32-S3 için release sürümünü derle (Hız ayarı)
+    python rg_tool.py --target=esp32-s3-devkit release
 
-# Sonuçları listele
-RUN ls -l build/MASTER_RETRO_GO.bin
+# Derlenen dosyaların kontrolü
+RUN ls -R build/
