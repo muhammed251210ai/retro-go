@@ -1,10 +1,9 @@
 # **************************************************************************
-# * Kynex Sovereign - Unified Dual System CI v213.0
+# * Kynex Sovereign - Unified CI v214.0 (Launcher + Pure Storage)
 # * Geliştirici: Muhammed (Kynex)
 # * Donanım: ESP32-S3 N16R8 (16MB)
-# * Sistem 1: Retro-Go (Factory) - Docker
-# * Sistem 2: KynexOs (OTA_0) - Bağımsız Proje
-# * Hata Düzeltme: mkfatfs pathing ve empty directory error fix.
+# * Not: KynexOs adımı atlandı, sadece Retro-Go ve Storage aktif.
+# * Hata Düzeltme: mkfatfs exit code 1 (Path & Format Fix).
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -16,7 +15,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  # 🕹️ JOB 1: RETRO-GO (SİSTEM 1)
+  # 🕹️ JOB 1: RETRO-GO (SİSTEM 1 - FACTORY)
   build-retro-go:
     runs-on: ubuntu-latest
     steps:
@@ -44,30 +43,7 @@ jobs:
             bootloader.bin
             partitions.bin
 
-  # 🖥️ JOB 2: KYNEX-OS (SİSTEM 2 - AYRI PROJE)
-  build-kynex-os:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Kodlari Cek
-        uses: actions/checkout@v4
-
-      - name: PlatformIO ile KynexOs Derle
-        run: |
-          # Muhammed: KynexOs klasörüne girip bağımsız projenin firmware'ini üretiyoruz.
-          cd KynexOs || cd kynex-os || echo "Klasor bulunamadi, ana dizin denenecek."
-          python -m pip install --upgrade pip
-          pip install platformio
-          pio run
-
-      - name: KynexOs Bin Yukle
-        uses: actions/upload-artifact@v4
-        with:
-          name: 02_KynexOs_Package
-          path: |
-             KynexOs/.pio/build/*/firmware.bin
-             kynex-os/.pio/build/*/firmware.bin
-
-  # 📂 JOB 3: STORAGE (FFAT - ELDEKİ ÇEKİRDEKLER)
+  # 📂 JOB 2: STORAGE (FFAT - ELDEKİ ÇEKİRDEKLER VE OYUNLAR)
   build-storage:
     runs-on: ubuntu-latest
     steps:
@@ -78,27 +54,26 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install platformio
-          # MUHAMMED: --global ile aracı sisteme mühürlüyoruz
           pio pkg install --global --tool platformio/tool-mkfatfs
-          # Aracı bulup tam yolunu (absolute path) kaydediyoruz
           MKFATFS_RAW_PATH=$(find ~/.platformio/packages/tool-mkfatfs -name "mkfatfs" | head -n 1)
           echo "MKFATFS_EXE=$MKFATFS_RAW_PATH" >> $GITHUB_ENV
 
       - name: FFat Imajini Paketle
         run: |
-          # 1. Klasör yapısını garanti altına alıyoruz (Boşsa bile çökmemesi için)
+          # Klasör yapısını ve mutlak yolu garantiye alıyoruz
           mkdir -p storage/data/retro-go/cores
           mkdir -p storage/data/roms
-          
-          # 2. Eğer klasör boşsa içine hayalet bir dosya atıyoruz (mkfatfs boş klasörü sevmez)
           touch storage/data/kynex_readme.txt
           
-          # 3. Paketleme komutu (0x7F0000 = 8MB civarı)
-          echo "Kullanilan Arac: ${{ env.MKFATFS_EXE }}"
-          ${{ env.MKFATFS_EXE }} -c storage/data/ -s 0x7F0000 -t ffat ffat.bin
+          # Boyut: 0x7F0000 = 8323072 byte
+          # Bazı mkfatfs sürümleri -t ffat istemez, direkt imaj üretir.
+          # Kaynak dizini mutlak yol (absolute path) olarak veriyoruz.
+          echo "Paketleme basliyor..."
+          ${{ env.MKFATFS_EXE }} -c $(pwd)/storage/data/ -s 8323072 ffat.bin
+          echo "Paketleme tamamlandi."
 
-      - name: Storage Paketini Yukle
+      - name: Storage Paketini Yukle (Adres: 0x810000)
         uses: actions/upload-artifact@v4
         with:
-          name: 03_Storage_Package
+          name: 02_Storage_Package
           path: ffat.bin
