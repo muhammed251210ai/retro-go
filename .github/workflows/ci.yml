@@ -19,32 +19,26 @@ jobs:
   build-retro-go:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodlari Cek (Alt Moduller Dahil)
+      - name: Kodlari Cek (Submoduller Dahil)
         uses: actions/checkout@v4
         with:
-          # MUHAMMED: Bu satır çok kritik! Emülatör kodlarını (nes, doom vb.) çekmeyi sağlar.
+          # MUHAMMED: Bu satır olmazsa emülatörler derlenemez!
           submodules: 'recursive'
           fetch-depth: 0
 
       - name: Retro-Go Derle (Dockerfile ile Docker Build)
         run: |
-          # Dockerfile dosyasının ana dizinde olduğunu varsayıyoruz
           docker build -t retro-go-builder .
           
           # Konteynırı oluştur
           docker run --name temp-container retro-go-builder /bin/true
           
-          # Derlenen kritik sistem dosyalarını dışarı al
-          # Launcher (0x10000)
+          # Derlenen dosyaları dışarı al
           docker cp temp-container:/app/build/launcher.bin ./launcher.bin
-          
-          # Bootloader (0x0)
           docker cp temp-container:/app/build/bootloader/bootloader.bin ./bootloader.bin
-          
-          # Partition Table (0x8000)
           docker cp temp-container:/app/build/partition_table/partition-table.bin ./partitions.bin
           
-          # Konteynırı temizle
+          # Temizlik
           docker rm temp-container
 
       - name: Retro-Go Bin Dosyalarini Paketle
