@@ -1,8 +1,8 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Independent CI v196.0
+# * Kynex Sovereign - Retro-Go Independent CI v197.0
 # * Geliştirici: Muhammed (Kynex)
 # * Donanım: ESP32-S3 N16R8 (16MB)
-# * Hata Düzeltme: Line 39 Syntax error fixed, indentation perfected.
+# * Hata Düzeltme: Line 36 indentation and YAML syntax fixed.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -33,7 +33,7 @@ jobs:
           docker cp temp-container:/app/build/partition_table/partition-table.bin ./partitions.bin
           docker rm temp-container
 
-      - name: Retro-Go Paketini Yukle (Adres: 0x10000)
+      - name: Retro-Go Paketini Yukle
         uses: actions/upload-artifact@v4
         with:
           name: Kynex_RetroGo_S3_Bins
