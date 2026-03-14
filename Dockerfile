@@ -1,8 +1,8 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Master Dockerfile v198.0
+# * Kynex Sovereign - Retro-Go Master Dockerfile v200.0
 # * Geliştirici: Muhammed (Kynex)
 # * Görev: ESP-IDF v4.4 üzerinde S3 Launcher derleme
-# * Hata Düzeltme: ESP-IDF VirtualEnv Python kütüphane çakışması çözüldü!
+# * Hata Düzeltme: CCache temizliği ve mutlak sıfır noktası derlemesi.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -15,6 +15,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     python3-pip \
     git \
+    ccache \
     && rm -rf /var/lib/apt/lists/*
 
 # Proje dosyalarını Docker içine aktarıyoruz
@@ -28,16 +29,16 @@ RUN cd /opt/esp/idf && \
         done; \
     fi
 
-# MUHAMMED: DERLEME OPERASYONU VE VIRTUALENV FIX
+# MUHAMMED: MUTLAK TEMİZLİK VE DERLEME OPERASYONU
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
-    # Git güvenlik hatasını engellemek için ana dizini güvenli işaretle
     git config --global --add safe.directory /app && \
-    # KRİTİK DÜZELTME: ESP-IDF'in kendi Python ortamına kütüphaneleri kuruyoruz!
     python3 -m pip install --upgrade pip && \
     python3 -m pip install pillow click pyserial cryptography && \
-    # Eski build verilerini temizle
-    rm -rf build && \
+    # Eski build verilerini kökünden kazı
+    rm -rf build sdkconfig sdkconfig.old && \
+    # CCache (Derleyici önbelleği) tamamen temizleniyor! (Kritik Donanım Hatası Çözümü)
+    ccache -C && \
     mkdir -p build && \
     # rg_tool üzerinden S3 derlemesini başlat
     python3 rg_tool.py --target=esp32-s3-devkit release
