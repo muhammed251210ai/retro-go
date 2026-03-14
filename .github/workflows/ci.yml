@@ -1,7 +1,8 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Independent CI v195.0
+# * Kynex Sovereign - Retro-Go Independent CI v196.0
 # * Geliştirici: Muhammed (Kynex)
-# * Hata Düzeltme: Submodule recursive fetch garantisi.
+# * Donanım: ESP32-S3 N16R8 (16MB)
+# * Hata Düzeltme: Line 39 Syntax error fixed, indentation perfected.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -10,6 +11,7 @@ name: RetroGo_Sovereign_CI
 on: [push]
 
 env:
+  # GitHub Actions 2026 standartları için Node.js 24 ayarı
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
@@ -19,21 +21,16 @@ jobs:
       - name: Kodlari Cek (Submoduller Dahil)
         uses: actions/checkout@v4
         with:
-          # MUHAMMED: Bu satır olmazsa derleyici "dosya yok" diye ağlar.
           submodules: 'recursive'
           fetch-depth: 0
 
-      - name: Docker ile S3 Launcher Üret
+      - name: Docker ile S3 Launcher Uret
         run: |
           docker build -t retro-go-builder .
-          
-          # Konteynırdan dosyaları cımbızla çekiyoruz
           docker run --name temp-container retro-go-builder /bin/true
-          
           docker cp temp-container:/app/build/launcher.bin ./launcher.bin
           docker cp temp-container:/app/build/bootloader/bootloader.bin ./bootloader.bin
           docker cp temp-container:/app/build/partition_table/partition-table.bin ./partitions.bin
-          
           docker rm temp-container
 
       - name: Retro-Go Paketini Yukle (Adres: 0x10000)
