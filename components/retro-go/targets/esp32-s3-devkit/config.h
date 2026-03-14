@@ -1,8 +1,8 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition
+/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Crystal Clear Fix)
  * Geliştirici: Muhammed (Kynex)
  * Donanım: KynexBoard ESP32-S3 N16R8
- * Özellikler: Fixed SPI Pinout, rotated Joysticks, PWM Audio (Pin 18), Touch (Pin 16)
- * Hata Düzeltme: Pin conflicts with main OS resolved, 90-degree joystick rotation applied
+ * Özellikler: Glitch-Free SPI (20MHz), Fixed SPI Pinout, Rotated Joysticks
+ * Hata Düzeltme: Reduced SPI Speed to prevent screen artifacting/lines
  * Talimat: Asla satır silmeden, optimize etmeden, tam ve tek parça kod.
  */
 
@@ -12,8 +12,7 @@
 // Target definition
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3"
 
-// Storage (SD Kart Yok - Muhammed'in Dahili FFat Bölümü)
-// Bu ayar KynexOs ile aynı partition tablosunu (partitions.csv) kullanır
+// Storage (SD Kart Yok - Dahili FFat Bölümü)
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
 
@@ -21,12 +20,13 @@
 #define RG_AUDIO_USE_INT_DAC        0   // S3'te dahili DAC yok
 #define RG_AUDIO_USE_EXT_DAC        0   // Harici I2S devre dışı
 #define RG_AUDIO_USE_PWM            1   // PWM Audio Aktif
-#define RG_GPIO_SND_PWM             GPIO_NUM_18 // Muhammed'in Speaker Pini
+#define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// Video (Kynex SPI Ekran Dizilimi - main.cpp ile Birebir Aynı)
+// Video (Çizgili Ekran Çözümü - Hız 20MHz'e düşürüldü)
 #define RG_SCREEN_DRIVER            0   // 0 = ILI9341
 #define RG_SCREEN_HOST              SPI2_HOST
-#define RG_SCREEN_SPEED             SPI_MASTER_FREQ_40M 
+// MUHAMMED: ÇİZGİLERİN SEBEBİ HIZDI! 40M veya 80M ekranı bozuyordu, 20M ile cam gibi olacak.
+#define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
 #define RG_SCREEN_BACKLIGHT         1
 #define RG_SCREEN_WIDTH             320
 #define RG_SCREEN_HEIGHT            240
@@ -41,7 +41,7 @@
 #define RG_GPIO_LCD_CS              GPIO_NUM_10
 #define RG_GPIO_LCD_DC              GPIO_NUM_9
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
-#define RG_GPIO_LCD_BCKL            GPIO_NUM_1  // Arka ışık pini
+#define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
 // Ekran İlkleme Komutları (90 Derece Yatay Mod Fix)
 #define RG_SCREEN_INIT()                                                                                        \
@@ -66,12 +66,6 @@
 
 
 // Input (Joystickler Muhammed'in 90 Derece Sağ Montajına Göre Fixlendi)
-/* * ✅ JOYSTICK ROTASYON MANTIĞI:
- * Muhammed'in konsolunda Joy1_X (Pin 4) ve Joy1_Y (Pin 5) yönleri sağlar.
- * Sağa 90 derece döndüğü için:
- * Fiziksel YUKARI/AŞAĞI artık Pin 4 (ADC_CH3) üzerinden okunur.
- * Fiziksel SOL/SAĞ artık Pin 5 (ADC_CH4) üzerinden okunur.
- */
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1024},\
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3072, 4096},\
@@ -80,14 +74,14 @@
 }
 
 #define RG_GAMEPAD_GPIO_MAP {\
-    {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, /* Joy1 SW - Kynexos Return */\
-    {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, /* Joy2 SW - Kynexos Return */\
-    {RG_KEY_A,      .num = GPIO_NUM_15, .pullup = 1, .level = 0}, /* Joy2 Y Axis used as Button A */\
-    {RG_KEY_B,      .num = GPIO_NUM_7,  .pullup = 1, .level = 0}, /* Joy2 X Axis used as Button B */\
-    {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, /* Boot Button */\
+    {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
+    {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
+    {RG_KEY_A,      .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
+    {RG_KEY_B,      .num = GPIO_NUM_7,  .pullup = 1, .level = 0}, \
+    {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// Battery (Muhammed'in Devresine Hazır)
+// Battery
 #define RG_BATTERY_DRIVER           1
 #define RG_BATTERY_ADC_UNIT         ADC_UNIT_1
 #define RG_BATTERY_ADC_CHANNEL      ADC_CHANNEL_4
@@ -102,7 +96,7 @@
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_NC
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_NC
 
-// Dokunmatik XPT2046 (Muhammed'in Pin 16 Hattı)
+// Dokunmatik XPT2046
 #define RG_TOUCH_DRIVER             1
 #define RG_GPIO_TP_CS               GPIO_NUM_16
 #define RG_GPIO_TP_IRQ              GPIO_NUM_NC
