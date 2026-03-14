@@ -1,7 +1,8 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Independent CI v204.0
+# * Kynex Sovereign - Retro-Go Independent CI v205.0
 # * Geliştirici: Muhammed (Kynex)
 # * Donanım: ESP32-S3 N16R8 (16MB)
+# * Hata Düzeltme: Docker extraction path corrected to /app/launcher/build/
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -26,9 +27,12 @@ jobs:
         run: |
           docker build -t retro-go-builder .
           docker run --name temp-container retro-go-builder /bin/true
-          docker cp temp-container:/app/build/launcher.bin ./launcher.bin
-          docker cp temp-container:/app/build/bootloader/bootloader.bin ./bootloader.bin
-          docker cp temp-container:/app/build/partition_table/partition-table.bin ./partitions.bin
+          
+          # MUHAMMED: Kargo Adresleri Düzeltildi! Dosyaları doğrudan launcher klasöründen çekiyoruz.
+          docker cp temp-container:/app/launcher/build/launcher.bin ./launcher.bin
+          docker cp temp-container:/app/launcher/build/bootloader/bootloader.bin ./bootloader.bin
+          docker cp temp-container:/app/launcher/build/partition_table/partition-table.bin ./partitions.bin
+          
           docker rm temp-container
 
       - name: Retro-Go Paketini Yukle
