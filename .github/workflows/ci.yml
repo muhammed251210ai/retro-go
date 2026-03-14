@@ -1,8 +1,9 @@
 # **************************************************************************
-# * Kynex Sovereign - Unified CI v208.0 (Launcher + Storage)
+# * Kynex Sovereign - Unified CI v209.0 (Launcher + Storage)
 # * Geliştirici: Muhammed (Kynex)
 # * Donanım: ESP32-S3 N16R8 (16MB)
 # * Görev: Launcher derler ve eldeki çekirdekleri/oyunları FFat olarak paketler.
+# * Hata Düzeltme: Line 69 YAML Syntax error fixed (Perfect Indentation).
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -54,7 +55,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install platformio
           pio pkg install --tool platformio/tool-mkfatfs
-          # Aracı bul ve global yap
           MKFATFS_PATH=$(find ~/.platformio/packages/tool-mkfatfs -name "mkfatfs" | head -n 1)
           echo "MKFATFS_EXE=$MKFATFS_PATH" >> $GITHUB_ENV
 
