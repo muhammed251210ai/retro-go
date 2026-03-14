@@ -1600,34 +1600,4 @@ void __attribute__((constructor)) kynex_boot_loader() {
     xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 }
 
-// =================================================================================
-// MUHAMMED: KYNEX-OS (OTA_0) ESCAPE TASK
-// Bu fonksiyon derleme araçlarını bozmadan sadece donanımda çalışır.
-// =================================================================================
-#ifdef ESP_PLATFORM
-#include "esp_ota_ops.h"
-#include "esp_partition.h"
-
-static void kynex_os_switch_task(void *arg) {
-    gpio_set_direction(GPIO_NUM_8, GPIO_MODE_INPUT); 
-    gpio_set_pull_mode(GPIO_NUM_8, GPIO_PULLUP_ONLY);
-    int kynex_timer = 0;
-    while(1) {
-        if(gpio_get_level(GPIO_NUM_8) == 0) { 
-            kynex_timer++;
-            if(kynex_timer > 20) { 
-                const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                if(kynex_part) { esp_ota_set_boot_partition(kynex_part); esp_restart(); }
-            }
-        } else { kynex_timer = 0; }
-        vTaskDelay(pdMS_TO_TICKS(100)); 
-    }
-}
-
-// Retro-Go sisteminin kendi başlatma kancasına takılıyoruz
-void __attribute__((constructor)) kynex_initializer() {
-    xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
-}
-#endif
-
 #endif
