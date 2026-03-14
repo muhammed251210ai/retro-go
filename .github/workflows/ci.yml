@@ -1,8 +1,8 @@
 # **************************************************************************
-# * Kynex Sovereign - Pure Retro-Go CI v191.0
+# * Kynex Sovereign - Retro-Go Independent CI v192.0
 # * Geliştirici: Muhammed (Kynex)
 # * Donanım: ESP32-S3 N16R8 (16MB)
-# * Görev: Sadece Retro-Go Launcher ve sistem dosyalarını derler.
+# * Hata Düzeltme: Submodule 'recursive' eklendi, exit code 1 engellendi.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -15,29 +15,33 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  # 🕹️ ANA İŞ: RETRO-GO DERLEME (Docker tabanlı ESP-IDF v4.4)
+  # 🕹️ ANA İŞ: RETRO-GO DERLEME
   build-retro-go:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodlari Cek
+      - name: Kodlari Cek (Alt Moduller Dahil)
         uses: actions/checkout@v4
+        with:
+          # MUHAMMED: Bu satır çok kritik! Emülatör kodlarını (nes, doom vb.) çekmeyi sağlar.
+          submodules: 'recursive'
+          fetch-depth: 0
 
       - name: Retro-Go Derle (Dockerfile ile Docker Build)
         run: |
           # Dockerfile dosyasının ana dizinde olduğunu varsayıyoruz
           docker build -t retro-go-builder .
           
-          # Konteynırı oluştur ama çalıştırma (/bin/true ile hemen durur)
+          # Konteynırı oluştur
           docker run --name temp-container retro-go-builder /bin/true
           
-          # Derlenen kritik sistem dosyalarını konteyner dışına kopyala
-          # Adres: 0x10000
+          # Derlenen kritik sistem dosyalarını dışarı al
+          # Launcher (0x10000)
           docker cp temp-container:/app/build/launcher.bin ./launcher.bin
           
-          # Adres: 0x0 (İlk uyandırma)
+          # Bootloader (0x0)
           docker cp temp-container:/app/build/bootloader/bootloader.bin ./bootloader.bin
           
-          # Adres: 0x8000 (Hafıza Rehberi)
+          # Partition Table (0x8000)
           docker cp temp-container:/app/build/partition_table/partition-table.bin ./partitions.bin
           
           # Konteynırı temizle
@@ -46,7 +50,7 @@ jobs:
       - name: Retro-Go Bin Dosyalarini Paketle
         uses: actions/upload-artifact@v4
         with:
-          name: RetroGo_Sovereign_Bins
+          name: RetroGo_Sovereign_Final_Bins
           path: |
             launcher.bin
             bootloader.bin
