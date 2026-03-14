@@ -1,8 +1,8 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Ghost Protocol)
+/* * RetroGo Configuration - Kynex Sovereign S3 Edition (v179.0)
  * Geliştirici: Muhammed (Kynex)
  * Donanım: KynexBoard ESP32-S3 N16R8
- * Özellikler: Glitch-Free SPI (20MHz), 180-Degree Fix (0x68), Dual-Joy Matrix
- * Hata Düzeltme: Macro-injection moved to C file to prevent Emulator compilation errors.
+ * Özellikler: Axis Inversion Fix, 180-Degree Flip, Dual-Joy Matrix
+ * Hata Düzeltme: Flipped ADC ranges for Left/Right to fix inverted movement.
  * Talimat: Asla satır silmeden, optimize etmeden, tam ve tek parça kod.
  */
 
@@ -64,16 +64,18 @@
     ILI9341_CMD(0xE1, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F);
 
 
-// YÖN VE BUTON KALİBRASYONU
+// MUHAMMED: YÖN VE BUTON KALİBRASYONU (Sağ-Sol Eksenleri Ters Çevrildi)
 #define RG_GAMEPAD_ADC_MAP {\
+    /* SOL JOYSTICK (YÖN) */ \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3072, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, /* MUHAMMED FIX: 0 yerine 3072 */ \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    /* MUHAMMED FIX: 3072 yerine 0 */ \
+    /* SAĞ JOYSTICK (BUTONLAR) */ \
     {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3072, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    \
-    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, /* MUHAMMED FIX: Eksen Düzeltildi */ \
+    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    /* MUHAMMED FIX: Eksen Düzeltildi */ \
 }
 
 #define RG_GAMEPAD_GPIO_MAP {\
@@ -93,7 +95,7 @@
 #define RG_GPIO_TP_CS               GPIO_NUM_16
 #define RG_GPIO_TP_IRQ              GPIO_NUM_NC
 
-// MUHAMMED: Buradaki geçiş kodlarını derleyiciyi bozmaması için tamamen temizledik.
-// Kod artık sadece rg_system.c içinde yaşayacak.
+extern void kynex_os_switch_task(void *arg);
+#define RG_TARGET_INIT() xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
