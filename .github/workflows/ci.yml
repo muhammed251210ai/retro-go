@@ -1,7 +1,7 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Master CI v194.0
+# * Kynex Sovereign - Retro-Go Independent CI v195.0
 # * Geliştirici: Muhammed (Kynex)
-# * Hata Düzeltme: Recursive submodule fetch fetch-depth fix.
+# * Hata Düzeltme: Submodule recursive fetch garantisi.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -19,28 +19,27 @@ jobs:
       - name: Kodlari Cek (Submoduller Dahil)
         uses: actions/checkout@v4
         with:
+          # MUHAMMED: Bu satır olmazsa derleyici "dosya yok" diye ağlar.
           submodules: 'recursive'
           fetch-depth: 0
 
-      - name: Docker ile Derleme Yap
+      - name: Docker ile S3 Launcher Üret
         run: |
-          # Dockerfile'i kullanarak S3 Launcher üret
           docker build -t retro-go-builder .
           
-          # Konteynırdan çıktıları al
+          # Konteynırdan dosyaları cımbızla çekiyoruz
           docker run --name temp-container retro-go-builder /bin/true
           
-          # Dosyaları yerel dizine kopyala
           docker cp temp-container:/app/build/launcher.bin ./launcher.bin
           docker cp temp-container:/app/build/bootloader/bootloader.bin ./bootloader.bin
           docker cp temp-container:/app/build/partition_table/partition-table.bin ./partitions.bin
           
           docker rm temp-container
 
-      - name: Final Bin Dosyalarini Paketle
+      - name: Retro-Go Paketini Yukle (Adres: 0x10000)
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_RetroGo_S3_Final_Bins
+          name: Kynex_RetroGo_S3_Bins
           path: |
             launcher.bin
             bootloader.bin
