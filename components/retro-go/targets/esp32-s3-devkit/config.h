@@ -1,35 +1,28 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition (v180.0)
+/* * RetroGo Configuration - Kynex Sovereign S3 Edition (v181.0)
  * Geliştirici: Muhammed (Kynex)
  * Donanım: KynexBoard ESP32-S3 N16R8
- * Özellikler: Full Library Scan, Axis Flip Fix, Dual-Boot Escape
- * Hata Düzeltme: Corrected ADC thresholds for Left/Right inversion.
+ * Özellikler: Axis Flip Fix, 180-Degree Flip, 20MHz SPI Stability
+ * Hata Düzeltme: Removed all ESP-IDF includes to prevent compilation exit code 1.
  * Talimat: Asla satır silmeden, optimize etmeden, tam ve tek parça kod.
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
 #define _RG_TARGET_CONFIG_H_
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include "driver/gpio.h"
-#include "esp_ota_ops.h"
-#include "esp_partition.h"
-#include "esp_system.h"
-
 // Target definition
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3"
 
-// Storage (FFat mount zorunlu)
+// Storage
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
 
-// Audio (Pin 18 Hoparlör)
+// Audio
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        0   
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// Video (SPI 20MHz Kararlılık)
+// Video
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -49,7 +42,7 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// EKRAN DÜZELTMESİ (0x68 - 180 Derece & Okunabilir Yazılar)
+// EKRAN DÜZELTMESİ (180 Derece Fix)
 #define RG_SCREEN_INIT()                                                                                        \
     ILI9341_CMD(0xCF, 0x00, 0xc3, 0x30);                                                                        \
     ILI9341_CMD(0xED, 0x64, 0x03, 0x12, 0x81);                                                                  \
@@ -71,7 +64,7 @@
     ILI9341_CMD(0xE1, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F);
 
 
-// MUHAMMED: YÖN VE BUTON KALİBRASYONU (Eksenler Tam Düzeltildi)
+// YÖN VE BUTON KALİBRASYONU (Sağ-Sol ve Buton Eksenleri Tam Düzeltildi)
 #define RG_GAMEPAD_ADC_MAP {\
     /* SOL JOYSTICK (YÖN) */ \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3072, 4096}, \
@@ -101,9 +94,5 @@
 #define RG_TOUCH_DRIVER             1
 #define RG_GPIO_TP_CS               GPIO_NUM_16
 #define RG_GPIO_TP_IRQ              GPIO_NUM_NC
-
-// KYNEX-OS GEÇİŞ GÖREVİ
-extern void kynex_os_switch_task(void *arg);
-#define RG_TARGET_INIT() xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
