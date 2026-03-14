@@ -1,7 +1,7 @@
 # **************************************************************************
-# * Kynex Sovereign - Stable Core Dockerfile v223.0
+# * Kynex Sovereign - Recovery Assassin Dockerfile v234.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Watchdog Reset döngüsünü engeller, saf derleme yapar.
+# * Görev: enter_recovery_mode çağrılarını kaynak koddan tamamen siler.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -28,25 +28,28 @@ RUN cd /opt/esp/idf && \
         done; \
     fi
 
-# MUHAMMED: SAF VE KARARLI DERLEME OPERASYONU
+# MUHAMMED: KESİN VE NİHAİ RECOVERY İPTAL OPERASYONU
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
     git config --global --add safe.directory /app && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install pillow click pyserial cryptography && \
-    # 1. Çakışan KynexOs fonksiyonunu derlemeden önce siliyoruz
+    # 1. Çakışan KynexOs fonksiyonunu temizle
     sed -i '/static void kynex_os_switch_task/,/^}/d' /app/components/retro-go/rg_system.c && \
-    # 2. WiFi yolunu FFat olarak mühürle
+    # 2. WiFi ve Hafıza yolunu FFat olarak mühürle
     sed -i 's/\/sd/\/ffat/g' /app/components/retro-go/rg_storage.c || true && \
+    # 3. İŞTE KİLİDİ KIRAN KOD: Recovery modunu kaynak koddan söküp atıyoruz!
+    # Sistem kurtarma moduna girmeye çalışsa bile sadece "Bypassed" yazıp normal açılacak.
+    find /app -name "*.c" -exec sed -i 's/enter_recovery_mode();/ESP_LOGW("KYNEX", "Recovery Bypassed!");/g' {} + && \
     # Eski build verilerini temizle
     rm -rf build sdkconfig sdkconfig.old && \
     ccache -C && \
-    # 3. AŞAMA: Ana derleme (Cores hatasını yoksayıyoruz)
+    # 4. Ana derleme
     (python3 rg_tool.py --target=esp32-s3-devkit release || true) && \
-    # 4. AŞAMA: Bootloader ve Partition Table'ı zorla üretiyoruz
+    # 5. Bootloader ve Partition Table
     cd /app/launcher && \
     idf.py -DRG_PROJECT_APP=launcher -DRG_BUILD_TARGET=RG_TARGET_ESP32_S3_DEVKIT -DRG_BUILD_RELEASE=1 bootloader partition-table && \
-    # 5. AŞAMA: Çıktıları kasaya kilitle
+    # 6. Çıktıları kasaya kilitle
     mkdir -p /kynex_out && \
     find /app -name "launcher.bin" -type f -exec cp {} /kynex_out/launcher.bin \; && \
     find /app -name "bootloader.bin" -type f -exec cp {} /kynex_out/bootloader.bin \; && \
