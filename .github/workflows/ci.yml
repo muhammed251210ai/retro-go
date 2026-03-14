@@ -1,12 +1,12 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Independent CI v207.0
+# * Kynex Sovereign - Unified CI v208.0 (Launcher + Storage)
 # * Geliştirici: Muhammed (Kynex)
 # * Donanım: ESP32-S3 N16R8 (16MB)
-# * Hata Düzeltme: Target kynex_out payload extraction.
+# * Görev: Launcher derler ve eldeki çekirdekleri/oyunları FFat olarak paketler.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
-name: RetroGo_Sovereign_CI
+name: RetroGo_Sovereign_Full_CI
 
 on: [push]
 
@@ -14,10 +14,11 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  build:
+  # 🕹️ JOB 1: LAUNCHER & BOOTLOADER ÜRETİMİ
+  build-retro-go:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodlari Cek (Submoduller Dahil)
+      - name: Kodlari Cek
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
@@ -27,20 +28,46 @@ jobs:
         run: |
           docker build -t retro-go-builder .
           docker run --name temp-container retro-go-builder /bin/true
-          
-          # MUHAMMED: Kargo adresleri doğrudan güvenli kasaya (kynex_out) bakıyor!
           docker cp temp-container:/kynex_out/launcher.bin ./launcher.bin
           docker cp temp-container:/kynex_out/bootloader.bin ./bootloader.bin
           docker cp temp-container:/kynex_out/partition-table.bin ./partitions.bin
-          
           docker rm temp-container
 
-      - name: Retro-Go Paketini Yukle
+      - name: Launcher Paketini Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_RetroGo_S3_Bins
+          name: 01_RetroGo_Launcher_Package
           path: |
             launcher.bin
             bootloader.bin
             partitions.bin
-          compression-level: 9
+
+  # 📂 JOB 2: STORAGE (ELDEKİ ÇEKİRDEKLER VE OYUNLAR)
+  build-storage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodlari Cek
+        uses: actions/checkout@v4
+
+      - name: FFat Paketleme Aracini Kur (mkfatfs)
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+          pio pkg install --tool platformio/tool-mkfatfs
+          # Aracı bul ve global yap
+          MKFATFS_PATH=$(find ~/.platformio/packages/tool-mkfatfs -name "mkfatfs" | head -n 1)
+          echo "MKFATFS_EXE=$MKFATFS_PATH" >> $GITHUB_ENV
+
+      - name: FFat Imajini Olustur (ffat.bin)
+        run: |
+          # Muhammed, elindeki çekirdekleri storage/data/retro-go/cores/ içine koymalısın.
+          # Oyunları ise storage/data/roms/ içine.
+          # Haritadaki FFat boyutu: 0xBF0000 (Yaklaşık 11.9MB)
+          cd storage
+          ${{ env.MKFATFS_EXE }} -c data/ -s 0xBF0000 -t ffat ffat.bin
+
+      - name: Storage Paketini Yukle (Adres: 0x410000)
+        uses: actions/upload-artifact@v4
+        with:
+          name: 02_Storage_Package
+          path: storage/ffat.bin
