@@ -1,21 +1,13 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Final Pivot)
+/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Compiler Final Fix)
  * Geliştirici: Muhammed (Kynex)
  * Donanım: KynexBoard ESP32-S3 N16R8
- * Özellikler: Glitch-Free SPI, Dual-Joy Matrix, KynexOs Escape Hatch
- * Hata Düzeltme: MADCTL adjusted to 0x68 to fix 180-degree inverted screen
+ * Özellikler: Glitch-Free SPI (20MHz), 180-Degree Flip Fix (0x68), Dual-Joy Matrix
+ * Hata Düzeltme: Task definition moved to C file to prevent duplicated symbol error.
  * Talimat: Asla satır silmeden, optimize etmeden, tam ve tek parça kod.
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
 #define _RG_TARGET_CONFIG_H_
-
-// KYNEX-OS GEÇİŞ SİSTEMİ İÇİN GEREKLİ KÜTÜPHANELER
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include "driver/gpio.h"
-#include "esp_ota_ops.h"
-#include "esp_partition.h"
-#include "esp_system.h"
 
 // Target definition
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3"
@@ -50,8 +42,7 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// MUHAMMED: 180 DERECE TERS EKRAN ÇÖZÜMÜ!
-// 0xA8 yerine 0x68 kullanarak görüntüyü tam tur döndürdük.
+// EKRAN DÜZELTMESİ (180 Derece Fix)
 #define RG_SCREEN_INIT()                                                                                        \
     ILI9341_CMD(0xCF, 0x00, 0xc3, 0x30);                                                                        \
     ILI9341_CMD(0xED, 0x64, 0x03, 0x12, 0x81);                                                                  \
@@ -59,28 +50,26 @@
     ILI9341_CMD(0xCB, 0x39, 0x2c, 0x00, 0x34, 0x02);                                                            \
     ILI9341_CMD(0xF7, 0x20);                                                                                    \
     ILI9341_CMD(0xEA, 0x00, 0x00);                                                                              \
-    ILI9341_CMD(0xC0, 0x1B);                 /* Power control   */                                              \
-    ILI9341_CMD(0xC1, 0x12);                 /* Power control   */                                              \
-    ILI9341_CMD(0xC5, 0x32, 0x3C);           /* VCM control */                                                  \
-    ILI9341_CMD(0xC7, 0x91);                 /* VCM control2 */                                                 \
-    ILI9341_CMD(0x36, 0x68);                 /* MUHAMMED FIX: 180 Derece Pivot (MY=0, MX=1, MV=1, BGR=1) */     \
-    ILI9341_CMD(0xB1, 0x00, 0x10);           /* Frame Rate Control */                                           \
-    ILI9341_CMD(0xB6, 0x0A, 0xA2);           /* Display Function Control */                                     \
+    ILI9341_CMD(0xC0, 0x1B);                                                                                    \
+    ILI9341_CMD(0xC1, 0x12);                                                                                    \
+    ILI9341_CMD(0xC5, 0x32, 0x3C);                                                                              \
+    ILI9341_CMD(0xC7, 0x91);                                                                                    \
+    ILI9341_CMD(0x36, 0x68);                 /* 180 Derece Fix */                                               \
+    ILI9341_CMD(0xB1, 0x00, 0x10);                                                                              \
+    ILI9341_CMD(0xB6, 0x0A, 0xA2);                                                                              \
     ILI9341_CMD(0xF6, 0x01, 0x30);                                                                              \
-    ILI9341_CMD(0xF2, 0x00);                 /* 3Gamma Function Disable */                                      \
-    ILI9341_CMD(0x26, 0x01);                 /* Gamma curve selected */                                         \
+    ILI9341_CMD(0xF2, 0x00);                                                                                    \
+    ILI9341_CMD(0x26, 0x01);                                                                                    \
     ILI9341_CMD(0xE0, 0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, 0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00); \
     ILI9341_CMD(0xE1, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F);
 
 
 // YÖN VE BUTON KALİBRASYONU
 #define RG_GAMEPAD_ADC_MAP {\
-    /* SOL JOYSTICK (YÖN) */ \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3072, 4096}, \
     {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, \
-    /* SAĞ JOYSTICK (BUTONLAR) */ \
     {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3072, 4096}, \
     {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    \
@@ -93,38 +82,19 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// Battery
+// Battery & Touch
 #define RG_BATTERY_DRIVER           1
 #define RG_BATTERY_ADC_UNIT         ADC_UNIT_1
 #define RG_BATTERY_ADC_CHANNEL      ADC_CHANNEL_4
 #define RG_BATTERY_CALC_PERCENT(raw) (((raw) * 2.f - 3500.f) / (4200.f - 3500.f) * 100.f)
 #define RG_BATTERY_CALC_VOLTAGE(raw) ((raw) * 2.f * 0.001f)
-
-// Status LED
 #define RG_GPIO_LED                 GPIO_NUM_NC
-
-// Dokunmatik XPT2046
 #define RG_TOUCH_DRIVER             1
 #define RG_GPIO_TP_CS               GPIO_NUM_16
 #define RG_GPIO_TP_IRQ              GPIO_NUM_NC
 
-// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
-static inline void kynex_os_switch_task(void *arg) {
-    gpio_set_direction(GPIO_NUM_8, GPIO_MODE_INPUT); 
-    gpio_set_pull_mode(GPIO_NUM_8, GPIO_PULLUP_ONLY);
-    int kynex_timer = 0;
-    while(1) {
-        if(gpio_get_level(GPIO_NUM_8) == 0) { 
-            kynex_timer++;
-            if(kynex_timer > 20) { 
-                const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                if(kynex_part) { esp_ota_set_boot_partition(kynex_part); esp_restart(); }
-            }
-        } else { kynex_timer = 0; }
-        vTaskDelay(pdMS_TO_TICKS(100)); 
-    }
-}
-
+// MUHAMMED: SISTEM BASLATICI MAKROSU (Gorev rg_system.c içinde tanımlanacak)
+extern void kynex_os_switch_task(void *arg);
 #define RG_TARGET_INIT() xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
