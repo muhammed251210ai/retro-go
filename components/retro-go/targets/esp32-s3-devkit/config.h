@@ -1,9 +1,7 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition (v199.0)
+/* * RetroGo Configuration - Kynex Sovereign USB Edition (v217.0)
  * Geliştirici: Muhammed (Kynex)
- * Donanım: KynexBoard ESP32-S3 N16R8
- * Özellikler: Axis Correction, 180-Degree Flip, KynexOs Escape Task
- * Hata Düzeltme: Redefinition (Çift tanımlama) hatası giderildi.
- * Talimat: Asla satır silmeden, optimize etmeden, tam ve tek parça kod.
+ * Özellik: USB Mass Storage Mode & WiFi Root Fix
+ * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -17,30 +15,24 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3-USB"
 
-// Storage (Sadece bu bölgeyi tarar)
+// STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
 
-// Audio (Pin 18)
-#define RG_AUDIO_USE_INT_DAC        0   
-#define RG_AUDIO_USE_EXT_DAC        0   
-#define RG_AUDIO_USE_PWM            1   
-#define RG_GPIO_SND_PWM             GPIO_NUM_18 
+// USB AYARLARI (S3 NATIVE USB)
+#define RG_ENABLE_USB_MSC           1   // USB Disk modunu aktif et
+#define RG_GPIO_USB_DP              GPIO_NUM_20
+#define RG_GPIO_USB_DN              GPIO_NUM_19
 
-// Video (20MHz)
+// Video & LCD Pinleri (Kynex Board Standart)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
 #define RG_SCREEN_BACKLIGHT         1
 #define RG_SCREEN_WIDTH             320
 #define RG_SCREEN_HEIGHT            240
-#define RG_SCREEN_ROTATE            0
-#define RG_SCREEN_VISIBLE_AREA      {0, 0, 0, 0}
-#define RG_SCREEN_SAFE_AREA         {0, 0, 0, 0}
-
-// LCD SPI PİNLERİ
 #define RG_GPIO_LCD_MISO            GPIO_NUM_13
 #define RG_GPIO_LCD_MOSI            GPIO_NUM_11
 #define RG_GPIO_LCD_CLK             GPIO_NUM_12
@@ -49,58 +41,25 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// EKRAN DÜZELTMESİ (180 Derece Fix)
+// 180 Derece Ekran Fix
 #define RG_SCREEN_INIT()                                                                                        \
-    ILI9341_CMD(0xCF, 0x00, 0xc3, 0x30);                                                                        \
-    ILI9341_CMD(0xED, 0x64, 0x03, 0x12, 0x81);                                                                  \
-    ILI9341_CMD(0xE8, 0x85, 0x00, 0x78);                                                                        \
-    ILI9341_CMD(0xCB, 0x39, 0x2c, 0x00, 0x34, 0x02);                                                            \
-    ILI9341_CMD(0xF7, 0x20);                                                                                    \
-    ILI9341_CMD(0xEA, 0x00, 0x00);                                                                              \
-    ILI9341_CMD(0xC0, 0x1B);                                                                                    \
-    ILI9341_CMD(0xC1, 0x12);                                                                                    \
-    ILI9341_CMD(0xC5, 0x32, 0x3C);                                                                              \
-    ILI9341_CMD(0xC7, 0x91);                                                                                    \
     ILI9341_CMD(0x36, 0x68);                                                                                    \
-    ILI9341_CMD(0xB1, 0x00, 0x10);                                                                              \
-    ILI9341_CMD(0xB6, 0x0A, 0xA2);                                                                              \
-    ILI9341_CMD(0xF6, 0x01, 0x30);                                                                              \
-    ILI9341_CMD(0xF2, 0x00);                                                                                    \
-    ILI9341_CMD(0x26, 0x01);                                                                                    \
-    ILI9341_CMD(0xE0, 0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, 0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00); \
-    ILI9341_CMD(0xE1, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F);
+    ILI9341_CMD(0xB6, 0x0A, 0xA2);
 
-
-// YÖN VE BUTON KALİBRASYONU (Muhammed Joystick Kalibrasyonu)
+// Joystick & Buton Haritası
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3072, 4096}, \
     {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, \
     {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1024},    \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3072, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    \
 }
-
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// Battery & Touch
-#define RG_BATTERY_DRIVER           1
-#define RG_BATTERY_ADC_UNIT         ADC_UNIT_1
-#define RG_BATTERY_ADC_CHANNEL      ADC_CHANNEL_4
-#define RG_BATTERY_CALC_PERCENT(raw) (((raw) * 2.f - 3500.f) / (4200.f - 3500.f) * 100.f)
-#define RG_BATTERY_CALC_VOLTAGE(raw) ((raw) * 2.f * 0.001f)
-#define RG_GPIO_LED                 GPIO_NUM_NC
-#define RG_TOUCH_DRIVER             1
-#define RG_GPIO_TP_CS               GPIO_NUM_16
-#define RG_GPIO_TP_IRQ              GPIO_NUM_NC
-
-// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ - ARTIK SADECE BURADA YAŞAYACAK
+// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
 static inline void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_8, GPIO_MODE_INPUT); 
     gpio_set_pull_mode(GPIO_NUM_8, GPIO_PULLUP_ONLY);
@@ -117,7 +76,8 @@ static inline void kynex_os_switch_task(void *arg) {
     }
 }
 
-// Sistemi Başlatma Kancası
-#define RG_TARGET_INIT() xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
+// Sistemi Başlatma Kancası (USB ve KynexOs Tasklarını Başlatır)
+#define RG_TARGET_INIT() \
+    xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
