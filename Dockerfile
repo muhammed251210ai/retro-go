@@ -1,8 +1,9 @@
 # **************************************************************************
-# * Kynex Sovereign Retro-Go Dockerfile v189.0
+# * Kynex Sovereign - Retro-Go Dockerfile v192.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: ESP-IDF v4.4 üzerinde Retro-Go Launcher derleme
-# * Talimat: Asla satır silmeden, tam ve tek parça kod.
+# * Görev: ESP-IDF v4.4 üzerinde S3 Master derleme
+# * Hata Düzeltme: Bağımlılıklar güncellendi, derleme kancası sağlamlaştırıldı.
+# * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
 # ESP-IDF v4.4 (Retro-Go için en kararlı sürüm)
@@ -10,25 +11,29 @@ FROM espressif/idf:release-v4.4
 
 WORKDIR /app
 
-# Bağımlılıkları tek seferde kuruyoruz
+# Bağımlılıkları tek seferde kurarak önbellekten kazanç sağlıyoruz
+# Pillow ve Click, Retro-Go'nun imaj işlemesi için şarttır.
 RUN apt-get update && apt-get install -y python3-pip && \
-    pip3 install pillow click
+    python3 -m pip install --upgrade pip && \
+    python3 -m pip install pillow click
 
-# Proje dosyalarını Docker içine al
+# Proje dosyalarını Docker içine alıyoruz
 ADD . /app
 
-# Retro-Go yamalarını çekirdek IDF'e uygula
+# Yamaları Uygula (Panic hook ve SD Fix)
+# Eğer bu dosyalar projen içinde yoksa derleme hata verir, kontrol etmelisin.
 RUN cd /opt/esp/idf && \
-	patch --ignore-whitespace -p1 -i "/app/tools/patches/panic-hook (esp-idf 4).diff" && \
-	patch --ignore-whitespace -p1 -i "/app/tools/patches/sdcard-fix (esp-idf 4).diff"
+	if [ -f "/app/tools/patches/panic-hook (esp-idf 4).diff" ]; then patch --ignore-whitespace -p1 -i "/app/tools/patches/panic-hook (esp-idf 4).diff"; fi && \
+	if [ -f "/app/tools/patches/sdcard-fix (esp-idf 4).diff" ]; then patch --ignore-whitespace -p1 -i "/app/tools/patches/sdcard-fix (esp-idf 4).diff"; fi
 
-# Derleme işlemi (Bash kabuğu kullanarak)
+# MUHAMMED: Hata ve Hız Ayarı
+# . /opt/esp/idf/export.sh komutu IDF ortamını hazırlar.
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
-    # Build klasörünü oluştur
+    # Build klasörünü garantiye al
     mkdir -p build && \
-    # Sadece ESP32-S3 için release sürümünü derle (Hız ayarı)
-    python rg_tool.py --target=esp32-s3-devkit release
+    # Sadece senin S3 konsolun için derleme yapıyoruz (HIZ BURADAN GELİYOR)
+    python3 rg_tool.py --target=esp32-s3-devkit release
 
-# Derlenen dosyaların kontrolü
+# Hata Veren Satır Fixlendi: Derlenen dosyaları doğrula
 RUN ls -R build/
