@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Smart Key Edition (v232.0)
+/* * RetroGo Configuration - Kynex Sovereign Ghost Pin Edition (v233.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: GPIO_1 Smart Button (Short: Menu, Long: KynexOs), Backlight Free
+ * Özellikler: LoadProhibited Crash Fix (Dummy Backlight Pin), Smart Key (GPIO 1)
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V232"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V233"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -29,7 +29,7 @@
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (Mutlak Yatay Konfigürasyon ve Arka Işık Serbest Bırakıldı)
+// VIDEO (Mutlak Yatay Konfigürasyon ve Hayalet Pin)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -42,7 +42,8 @@
 #define RG_GPIO_LCD_CS              GPIO_NUM_10
 #define RG_GPIO_LCD_DC              GPIO_NUM_9
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
-#define RG_GPIO_LCD_BCKL            -1  // MUHAMMED: GPIO 1 tuş olduğu için arka ışık iptal edildi!
+// MUHAMMED: Çökmeyi engelleyen Hayalet Pin! Sistem arka ışığı var sanıp buraya yazacak.
+#define RG_GPIO_LCD_BCKL            GPIO_NUM_47  
 
 // EKRAN DÜZELTMESİ (ILI9341)
 #define RG_SCREEN_INIT()                                                                                        \
