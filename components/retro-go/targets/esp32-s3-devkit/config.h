@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Recovery Fix Edition (v220.0)
+/* * RetroGo Configuration - Kynex Sovereign Ultimate Fix Edition (v221.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Fixed Orientation, High-Priority Button Poll, Internal FFat
+ * Özellikler: Absolute Landscape Mode, Input De-Conflict, Forced Internal FFat
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,9 +16,9 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-RECOVERY-FIX"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3-V221"
 
-// STORAGE (Dahili Hafıza - FFat)
+// STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
@@ -29,7 +29,7 @@
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (LCD Konfigürasyonu)
+// VIDEO (Zorunlu Yatay Konfigürasyon)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -43,12 +43,13 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// EKRAN DÜZELTMESİ (Fotoğraftaki dikey hali yatay yapma - 0x28 Landscape)
+// EKRAN DÜZELTMESİ (Fotoğraftaki dikey görüntüyü yatay yapan kesin komut: 0x28)
 #define RG_SCREEN_INIT()                                                                                        \
     ILI9341_CMD(0x36, 0x28);                                                                                    \
-    ILI9341_CMD(0xB6, 0x0A, 0x82);
+    ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
+    ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (ADC1 KANALLARI - Pürüzsüzleştirilmiş Eşik Değerleri)
+// ANALOG JOYSTICK (ADC1 KANALLARI)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 800},     \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3200, 4096}, \
@@ -60,7 +61,7 @@
     {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 0, 800},     \
 }
 
-// FİZİKSEL BUTONLAR (Recovery Navigasyonu İçin Kritik)
+// FİZİKSEL BUTONLAR (GPIO 0 - Boot butonu genellikle Menu tuşudur, çakışma olabilir)
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
