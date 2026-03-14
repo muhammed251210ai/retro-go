@@ -1,7 +1,8 @@
 # **************************************************************************
-# * Kynex Sovereign - Retro-Go Master Dockerfile v197.0
+# * Kynex Sovereign - Retro-Go Master Dockerfile v198.0
 # * Geliştirici: Muhammed (Kynex)
 # * Görev: ESP-IDF v4.4 üzerinde S3 Launcher derleme
+# * Hata Düzeltme: ESP-IDF VirtualEnv Python kütüphane çakışması çözüldü!
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -10,15 +11,11 @@ FROM espressif/idf:release-v4.4
 
 WORKDIR /app
 
-# Gerekli sistem bağımlılıkları
+# Gerekli sistem bağımlılıkları (Git ve diğer araçlar)
 RUN apt-get update && apt-get install -y \
     python3-pip \
     git \
     && rm -rf /var/lib/apt/lists/*
-
-# Python kütüphaneleri (Retro-Go araçları için şart)
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install pillow click pyserial cryptography
 
 # Proje dosyalarını Docker içine aktarıyoruz
 ADD . /app
@@ -31,9 +28,14 @@ RUN cd /opt/esp/idf && \
         done; \
     fi
 
-# MUHAMMED: DERLEME OPERASYONU
+# MUHAMMED: DERLEME OPERASYONU VE VIRTUALENV FIX
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
+    # Git güvenlik hatasını engellemek için ana dizini güvenli işaretle
+    git config --global --add safe.directory /app && \
+    # KRİTİK DÜZELTME: ESP-IDF'in kendi Python ortamına kütüphaneleri kuruyoruz!
+    python3 -m pip install --upgrade pip && \
+    python3 -m pip install pillow click pyserial cryptography && \
     # Eski build verilerini temizle
     rm -rf build && \
     mkdir -p build && \
