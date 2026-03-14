@@ -19,11 +19,19 @@ SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
     # Build klasörünü garantiye al
     mkdir -p build && \
-    # Sadece senin S3 konsolun için derleme yapıyoruz (HIZ BURADAN GELİYOR)
-    python rg_tool.py --target=esp32-s3-devkit release
-    # DİĞER HEDEFLER SİLİNMEDİ, İHTİYAÇ HALİNDE ALTTAKİ DİEZLERİ KALDIRABİLİRSİN:
-    # python rg_tool.py --target=odroid-go release
-    # python rg_tool.py --target=mrgc-g32 release
+    # Sadece senin S3 konsolun için derleme yapıyoruz
+    python rg_tool.py --target=esp32-s3-devkit release && \
+    # MUHAMMED: TÜM DOSYALARI TEK BİR MASTER IMAGE OLARAK BİRLEŞTİRİYORUZ
+    # Not: ffat.bin ve firmware.bin dosyalarının ana dizinde olduğu varsayılır.
+    esptool.py --chip esp32s3 merge_bin \
+    -o build/MASTER_KYNEX_SOVEREIGN.bin \
+    --flash_mode dio \
+    --flash_size 16MB \
+    0x0000 build/bootloader/bootloader.bin \
+    0x8000 build/partition_table/partition-table.bin \
+    0x10000 build/launcher.bin \
+    0x410000 firmware.bin \
+    0xC10000 ffat.bin
 
 # Hata Veren Satır Fixlendi: Artık alt klasörleri de kapsıyor
 RUN ls -R build/
