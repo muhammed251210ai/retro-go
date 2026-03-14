@@ -1,28 +1,34 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition (v182.0)
+/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Independent Mode)
  * Geliştirici: Muhammed (Kynex)
  * Donanım: KynexBoard ESP32-S3 N16R8
- * Özellikler: Forced FFat Mounting, Axis & Button Flip Fix, 20MHz SPI
- * Hata Düzeltme: Corrected joystick ranges and forced storage recognition.
+ * Özellikler: Axis Correction, 180-Degree Flip, KynexOs Escape Task
  * Talimat: Asla satır silmeden, optimize etmeden, tam ve tek parça kod.
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
 #define _RG_TARGET_CONFIG_H_
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include "driver/gpio.h"
+#include "esp_ota_ops.h"
+#include "esp_partition.h"
+#include "esp_system.h"
+
 // Target definition
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3"
 
-// Storage (Zorunlu FFat Yapılandırması)
+// Storage
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
 
-// Audio (Pin 18 PWM Hoparlör)
+// Audio (Pin 18)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        0   
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// Video (320x240 ILI9341 - 20MHz Kararlılık)
+// Video (20MHz Stability)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -42,7 +48,7 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// EKRAN DÜZELTMESİ (180 Derece Pivot ve Net Yazılar)
+// EKRAN DÜZELTMESİ (180 Derece Fix)
 #define RG_SCREEN_INIT()                                                                                        \
     ILI9341_CMD(0xCF, 0x00, 0xc3, 0x30);                                                                        \
     ILI9341_CMD(0xED, 0x64, 0x03, 0x12, 0x81);                                                                  \
@@ -64,15 +70,12 @@
     ILI9341_CMD(0xE1, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F);
 
 
-// MUHAMMED: YÖN VE BUTON KALİBRASYONU (Tam Düzeltilmiş Eksenler)
-// Analog veriler senin joystick dizilimine göre simetrik hale getirildi.
+// YÖN VE BUTON KALİBRASYONU (Muhammed Joystick Kalibrasyonu)
 #define RG_GAMEPAD_ADC_MAP {\
-    /* SOL JOYSTICK (YÖN TUŞLARI) */ \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3072, 4096}, \
     {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, \
     {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    \
-    /* SAĞ JOYSTICK (A-B-X-Y BUTONLARI) */ \
     {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3072, 4096}, \
     {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, \
@@ -85,7 +88,7 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// Battery & Touch (XPT2046)
+// Battery & Touch
 #define RG_BATTERY_DRIVER           1
 #define RG_BATTERY_ADC_UNIT         ADC_UNIT_1
 #define RG_BATTERY_ADC_CHANNEL      ADC_CHANNEL_4
@@ -95,5 +98,24 @@
 #define RG_TOUCH_DRIVER             1
 #define RG_GPIO_TP_CS               GPIO_NUM_16
 #define RG_GPIO_TP_IRQ              GPIO_NUM_NC
+
+// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
+static inline void kynex_os_switch_task(void *arg) {
+    gpio_set_direction(GPIO_NUM_8, GPIO_MODE_INPUT); 
+    gpio_set_pull_mode(GPIO_NUM_8, GPIO_PULLUP_ONLY);
+    int kynex_timer = 0;
+    while(1) {
+        if(gpio_get_level(GPIO_NUM_8) == 0) { 
+            kynex_timer++;
+            if(kynex_timer > 20) { 
+                const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+                if(kynex_part) { esp_ota_set_boot_partition(kynex_part); esp_restart(); }
+            }
+        } else { kynex_timer = 0; }
+        vTaskDelay(pdMS_TO_TICKS(100)); 
+    }
+}
+
+#define RG_TARGET_INIT() xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
