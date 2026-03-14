@@ -1,7 +1,7 @@
 # **************************************************************************
-# * Kynex Sovereign - USB MSC Enabled Dockerfile v217.0
+# * Kynex Sovereign - Internal Flash Master Dockerfile v219.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: ESP32-S3'ü USB Mass Storage (Disk) moduna hazırlar.
+# * Görev: Launcher derleme ve Dahili FFat Otomatik Format desteği.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y python3-pip git ccache && rm -rf /var/l
 
 ADD . /app
 
-# USB Kütüphanesini ve Yamaları Hazırla
 RUN cd /opt/esp/idf && \
     if [ -d "/app/tools/patches" ]; then \
         for f in /app/tools/patches/*.diff; do \
@@ -26,10 +25,11 @@ RUN . /opt/esp/idf/export.sh && \
     git config --global --add safe.directory /app && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install pillow click pyserial cryptography && \
-    # rg_system.c düzeltmesi
+    # rg_system.c temizliği
     sed -i '/static void kynex_os_switch_task/,/^}/d' /app/components/retro-go/rg_system.c && \
-    # WiFi Klasör Yolunu /sd yerine /ffat yapıyoruz (WiFi Fix)
+    # Depolama yolunu FFat olarak mühürle ve Otomatik Formatı aktif et
     sed -i 's/\/sd/\/ffat/g' /app/components/retro-go/rg_storage.c || true && \
+    sed -i 's/.format_if_mount_failed = false/.format_if_mount_failed = true/g' /app/components/retro-go/rg_storage.c && \
     rm -rf build sdkconfig sdkconfig.old && \
     ccache -C && \
     (python3 rg_tool.py --target=esp32-s3-devkit release || true) && \
