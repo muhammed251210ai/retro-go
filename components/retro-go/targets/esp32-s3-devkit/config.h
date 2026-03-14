@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Nuclear Fix Edition (v222.0)
+/* * RetroGo Configuration - Kynex Sovereign Stable Hardware (v223.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Forced Landscape, Recovery Shield, Analog Core Redefinition
+ * Özellikler: Landscape Screen, Clean Input Mapping, FFat Internal
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,9 +16,9 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3-V222"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3-STABLE"
 
-// STORAGE (Dahili Hafıza Mühürlendi)
+// STORAGE (Dahili Hafıza)
 #define RG_STORAGE_DRIVER           2   
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
@@ -29,13 +29,13 @@
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (Mutlak Yatay Konfigürasyon)
+// VIDEO (Yatay LCD Konfigürasyonu)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
 #define RG_SCREEN_WIDTH             320
 #define RG_SCREEN_HEIGHT            240
-#define RG_SCREEN_ROTATE            1   // 0: 0, 1: 90, 2: 180, 3: 270 derece
+#define RG_SCREEN_ROTATE            1   // Ekranı yazılımsal olarak 90 derece yatay yapar
 #define RG_GPIO_LCD_MISO            GPIO_NUM_13
 #define RG_GPIO_LCD_MOSI            GPIO_NUM_11
 #define RG_GPIO_LCD_CLK             GPIO_NUM_12
@@ -44,13 +44,13 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// EKRAN DÜZELTMESİ (ILI9341 Yatay Mod Komutları)
+// EKRAN DÜZELTMESİ (Donanımsal Yatay Mod)
 #define RG_SCREEN_INIT()                                                                                        \
     ILI9341_CMD(0x36, 0x28);                                                                                    \
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (ADC1 KANALLARI - Ölü Bölgeler Genişletildi)
+// ANALOG JOYSTICK (ADC1 KANALLARI)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3100, 4096}, \
@@ -62,7 +62,7 @@
     {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 0, 1000},    \
 }
 
-// FİZİKSEL BUTONLAR (Çakışma riskine karşı pull-up modları optimize edildi)
+// FİZİKSEL BUTONLAR (Çakışmasız ayar)
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
