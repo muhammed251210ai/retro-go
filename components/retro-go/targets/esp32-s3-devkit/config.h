@@ -1,13 +1,21 @@
-/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Compiler Fix)
+/* * RetroGo Configuration - Kynex Sovereign S3 Edition (Final Pivot)
  * Geliştirici: Muhammed (Kynex)
  * Donanım: KynexBoard ESP32-S3 N16R8
- * Özellikler: Glitch-Free SPI (20MHz), Mirror-Text Fixed (MADCTL 0xA8)
- * Hata Düzeltme: Removed OTA functions from header to prevent retro-core compilation crash.
+ * Özellikler: Glitch-Free SPI, Dual-Joy Matrix, KynexOs Escape Hatch
+ * Hata Düzeltme: MADCTL adjusted to 0x68 to fix 180-degree inverted screen
  * Talimat: Asla satır silmeden, optimize etmeden, tam ve tek parça kod.
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
 #define _RG_TARGET_CONFIG_H_
+
+// KYNEX-OS GEÇİŞ SİSTEMİ İÇİN GEREKLİ KÜTÜPHANELER
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include "driver/gpio.h"
+#include "esp_ota_ops.h"
+#include "esp_partition.h"
+#include "esp_system.h"
 
 // Target definition
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-S3"
@@ -42,7 +50,8 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// EKRAN DÜZELTMESİ (Ayna Efekti Kırıldı)
+// MUHAMMED: 180 DERECE TERS EKRAN ÇÖZÜMÜ!
+// 0xA8 yerine 0x68 kullanarak görüntüyü tam tur döndürdük.
 #define RG_SCREEN_INIT()                                                                                        \
     ILI9341_CMD(0xCF, 0x00, 0xc3, 0x30);                                                                        \
     ILI9341_CMD(0xED, 0x64, 0x03, 0x12, 0x81);                                                                  \
@@ -54,7 +63,7 @@
     ILI9341_CMD(0xC1, 0x12);                 /* Power control   */                                              \
     ILI9341_CMD(0xC5, 0x32, 0x3C);           /* VCM control */                                                  \
     ILI9341_CMD(0xC7, 0x91);                 /* VCM control2 */                                                 \
-    ILI9341_CMD(0x36, 0xA8);                 /* Ekran Düzeltildi (MY=1, MX=0, MV=1, BGR=1) */                   \
+    ILI9341_CMD(0x36, 0x68);                 /* MUHAMMED FIX: 180 Derece Pivot (MY=0, MX=1, MV=1, BGR=1) */     \
     ILI9341_CMD(0xB1, 0x00, 0x10);           /* Frame Rate Control */                                           \
     ILI9341_CMD(0xB6, 0x0A, 0xA2);           /* Display Function Control */                                     \
     ILI9341_CMD(0xF6, 0x01, 0x30);                                                                              \
@@ -66,10 +75,12 @@
 
 // YÖN VE BUTON KALİBRASYONU
 #define RG_GAMEPAD_ADC_MAP {\
+    /* SOL JOYSTICK (YÖN) */ \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3072, 4096}, \
     {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3072, 4096}, \
+    /* SAĞ JOYSTICK (BUTONLAR) */ \
     {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1024},    \
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3072, 4096}, \
     {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1024},    \
@@ -92,14 +103,28 @@
 // Status LED
 #define RG_GPIO_LED                 GPIO_NUM_NC
 
-// I2S Rezerve
-#define RG_GPIO_SND_I2S_BCK         GPIO_NUM_NC
-#define RG_GPIO_SND_I2S_WS          GPIO_NUM_NC
-#define RG_GPIO_SND_I2S_DATA        GPIO_NUM_NC
-
 // Dokunmatik XPT2046
 #define RG_TOUCH_DRIVER             1
 #define RG_GPIO_TP_CS               GPIO_NUM_16
 #define RG_GPIO_TP_IRQ              GPIO_NUM_NC
+
+// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
+static inline void kynex_os_switch_task(void *arg) {
+    gpio_set_direction(GPIO_NUM_8, GPIO_MODE_INPUT); 
+    gpio_set_pull_mode(GPIO_NUM_8, GPIO_PULLUP_ONLY);
+    int kynex_timer = 0;
+    while(1) {
+        if(gpio_get_level(GPIO_NUM_8) == 0) { 
+            kynex_timer++;
+            if(kynex_timer > 20) { 
+                const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+                if(kynex_part) { esp_ota_set_boot_partition(kynex_part); esp_restart(); }
+            }
+        } else { kynex_timer = 0; }
+        vTaskDelay(pdMS_TO_TICKS(100)); 
+    }
+}
+
+#define RG_TARGET_INIT() xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
