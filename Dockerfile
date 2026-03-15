@@ -1,8 +1,7 @@
 # **************************************************************************
-# * Kynex Sovereign - The Unstoppable Builder Dockerfile v236.0
+# * Kynex Sovereign - The Unstoppable Builder Dockerfile v236.1
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: C Syntax hatasını çözer ve Launcher'ı zorla derler.
-# * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
+# * Görev: C Syntax hatasını çözer, Launcher ve tüm app’leri .app olarak derler.
 # **************************************************************************
 
 FROM espressif/idf:release-v4.4
@@ -22,26 +21,24 @@ RUN cd /opt/esp/idf && \
 
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/esp/idf/export.sh && \
-    git config --global --add safe.directory /app && \
     python3 -m pip install --upgrade pip && \
     python3 -m pip install pillow click pyserial cryptography && \
     # KynexOs çakışma temizliği
     sed -i '/static void kynex_os_switch_task/,/^}/d' /app/components/retro-go/rg_system.c && \
     # FFat Yönlendirmesi
     sed -i 's/\/sd/\/ffat/g' /app/components/retro-go/rg_storage.c || true && \
-    # MUHAMMED: İŞTE KUSURSUZ C BYPASS TAKTİĞİ!
-    # Sistem 'enter_recovery_mode();' kodunu arayıp bulacak ve yerine hiçbir şey yapmayan ';' koyacak.
+    # C bypass taktiği
     find /app -name "*.c" -exec sed -i 's/enter_recovery_mode();/;/g' {} + && \
+    # Temizlik
     rm -rf build sdkconfig sdkconfig.old && \
     ccache -C && \
-    # MUHAMMED: Çekirdek derleme hatalarını yoksayan kalkan geri getirildi (|| true)
-    (python3 rg_tool.py --target=esp32-s3-devkit release || true) && \
-    cd /app/launcher && \
-    # MUHAMMED: Ne olursa olsun Launcher'ın KESİNLİKLE derlenmesini garanti altına alan 'build' komutu eklendi.
-    idf.py -DRG_PROJECT_APP=launcher -DRG_BUILD_TARGET=RG_TARGET_ESP32_S3_DEVKIT -DRG_BUILD_RELEASE=1 bootloader partition-table build && \
+    # Tüm app’leri release modda build et (.app üretimi)
+    python3 rg_tool.py release && \
     mkdir -p /kynex_out && \
-    find /app -name "launcher.bin" -type f -exec cp {} /kynex_out/launcher.bin \; && \
-    find /app -name "bootloader.bin" -type f -exec cp {} /kynex_out/bootloader.bin \; && \
-    find /app -name "partition-table.bin" -type f -exec cp {} /kynex_out/partition-table.bin \;
-
-RUN ls -la /kynex_out/
+    # Launcher ve diğer tüm app’lerin .app dosyalarını kopyala
+    for app in launcher retro-core prboom-go gwenesis fmsx; do \
+        if [ -f "/app/$app/$app.app" ]; then \
+            cp "/app/$app/$app.app" /kynex_out/; \
+        fi; \
+    done && \
+    ls -la /kynex_out/
