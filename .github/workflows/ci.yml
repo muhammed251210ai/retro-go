@@ -1,15 +1,15 @@
 # **************************************************************************
-# * Kynex Sovereign - Monolithic Build CI v266.0
+# * Kynex Sovereign - Pure Modular Build CI v267.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Launcher ve tüm çekirdekleri TEK BİR PAKET olarak derler.
+# * Görev: Launcher ve çekirdekleri AYRI AYRI dosyalar olarak derler.
 # **************************************************************************
 
-name: Sovereign Monolithic Build v266.0
+name: Sovereign Modular Build v267.0
 
 on: [push]
 
 jobs:
-  build-monolith:
+  build-modular:
     runs-on: ubuntu-latest
     steps:
       - name: Kodu Cek
@@ -17,20 +17,19 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Sovereign Monolith Derleme (Docker)
+      - name: Sovereign Modular Derleme (Docker)
         run: |
-          # MUHAMMED: Docker içindeki rg_tool komutunu 'all' hedefine çevirdik.
-          # Bu sayede launcher derlenirken NES, GB, Doom çekirdeklerini de içine mühürler.
+          # MUHAMMED: Docker içinde her emülatörü ayrı bin dosyası olarak pişiriyoruz.
           docker build -t retro-go-builder .
-          docker run --name monolith-container retro-go-builder /bin/true
+          docker run --name modular-container retro-go-builder /bin/true
           mkdir -p release_bins
           
-          # İşte her şeyin birleştiği an!
-          docker cp monolith-container:/kynex_out/. ./release_bins/
-          docker rm monolith-container
+          # Tüm bin dosyalarını (launcher ve çekirdekler) dışarı aktar
+          docker cp modular-container:/kynex_out/. ./release_bins/
+          docker rm modular-container
 
-      - name: Monolitik Paketi Yukle
+      - name: Modüler Paketi Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign_Monolith_v266
+          name: Sovereign_Modular_v267
           path: release_bins/
