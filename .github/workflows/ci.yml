@@ -1,23 +1,37 @@
-name: Sovereign Honest Build v273.0
+# **************************************************************************
+# * Kynex Sovereign - Deep Clean Build CI v274.0
+# * Geliştirici: Muhammed (Kynex)
+# * Görev: Tüm alt modülleri Docker'a taşır ve hatasız bin üretir.
+# **************************************************************************
+
+name: Sovereign Deep Clean Build v274.0
+
 on: [push]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
-  build-sovereign:
+  build-sovereign-factory:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodu Cek
+      - name: Kodu ve Derin Alt Modulleri Cek
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
           fetch-depth: 0
-      - name: Derleme
+
+      - name: Sovereign Fabrikasini Atesle (Docker)
         run: |
-          docker build -t factory .
-          docker run --name container factory /bin/true
-          mkdir -p output
-          docker cp container:/kynex_out/. ./output/
-          docker rm container
-      - name: Paket Yukle
+          docker build -t sovereign-factory .
+          docker run --name sovereign-container sovereign-factory /bin/true
+          mkdir -p final_pack
+          docker cp sovereign-container:/kynex_out/. ./final_pack/
+          docker rm sovereign-container
+
+      - name: Sovereign Mega Paketini Yukle (Flash Ready)
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_V273
-          path: output/
+          name: Kynex_Sovereign_V274_Pack
+          path: final_pack/
+          compression-level: 9
