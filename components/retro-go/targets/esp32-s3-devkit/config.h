@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Typo Fixer (v241.0)
+/* * RetroGo Configuration - Kynex Sovereign Ultimate Stabilizer (v242.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: RG_SCREEN_WIDTH Typo Fixed, Calibrated ADC, HW BOOT Anchor
+ * Özellikler: Ghost Input Assassin, HW BOOT Anchor, PSRAM Conflict Fix
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V241"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V242"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -33,7 +33,6 @@
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
-// MUHAMMED: İŞTE O UTANÇ VERİCİ HATA DÜZELTİLDİ!
 #define RG_SCREEN_WIDTH             320
 #define RG_SCREEN_HEIGHT            240
 #define RG_SCREEN_ROTATE            1   // 90 Derece Yatay Kilit
@@ -52,26 +51,37 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (GERÇEK DÜNYA KALİBRASYONU - 1000 ve 3000 Eşikleri)
+// MUHAMMED: HAYALET DOKUNUŞLARI ÖLDÜREN KOD! (ADC İptali)
+// Eğer fiziksel bir analog joystik bağlamadıysan boşta kalan pinler sürekli YUKARI basar.
+// Değerleri imkansız olan 5000-6000 sınırına çekerek bu sorunu kökünden çözdük.
 #define RG_GAMEPAD_ADC_MAP {\
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 5000, 6000}, \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 5000, 6000}, \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 5000, 6000}, \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 5000, 6000}, \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 5000, 6000}, \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 5000, 6000}, \
 }
 
-// FİZİKSEL BUTONLAR (Kısa basım için GPIO_21 Menu tuşu)
+// FİZİKSEL BUTONLAR
+// MUHAMMED: GPIO_21'deki çakışma yok edildi! Menü artık kartın üstündeki fiziksel BOOT (GPIO_0) tuşunda.
+// Diğer oynamak istediğin yön ve aksiyon tuşlarını sorunsuz pinlere bağlayabilirsin.
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
-    {RG_KEY_MENU,   .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
+    {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
+    {RG_KEY_UP,     .num = GPIO_NUM_4,  .pullup = 1, .level = 0}, \
+    {RG_KEY_DOWN,   .num = GPIO_NUM_5,  .pullup = 1, .level = 0}, \
+    {RG_KEY_LEFT,   .num = GPIO_NUM_7,  .pullup = 1, .level = 0}, \
+    {RG_KEY_RIGHT,  .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
+    {RG_KEY_A,      .num = GPIO_NUM_16, .pullup = 1, .level = 0}, \
+    {RG_KEY_B,      .num = GPIO_NUM_42, .pullup = 1, .level = 0}, \
 }
 
 // KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ (Sistem geçişi BOOT - GPIO 0 tuşunda)
+// Kartın üzerindeki BOOT tuşuna kısa basarsan MENÜ açılır, 2 Saniye basılı tutarsan KynexOs'a geçer.
 static inline void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
     gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
