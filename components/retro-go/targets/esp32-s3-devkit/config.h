@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Final Display (v248.0)
+/* * RetroGo Configuration - Kynex Sovereign Control Awakener (v249.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: MISO Disabled (-1), 20MHz SPI, Perfect UI Stability
+ * Özellikler: D-Pad & Action Buttons Enabled, Safe GPIO Mapping
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V248"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V249"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -29,21 +29,19 @@
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (MUHAMMED: İŞTE ÇÖZÜM! Takılı olmayan MISO pini -1 yapıldı)
+// VIDEO (MISO İptal, 20MHz Kusursuz Ekran)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
 #define RG_SCREEN_WIDTH             320
 #define RG_SCREEN_HEIGHT            240
 #define RG_SCREEN_ROTATE            1   
-// MISO İPTAL EDİLDİ! Sistem artık kör bekleme yapmayacak.
 #define RG_GPIO_LCD_MISO            -1  
 #define RG_GPIO_LCD_MOSI            GPIO_NUM_11
 #define RG_GPIO_LCD_CLK             GPIO_NUM_12
 #define RG_GPIO_LCD_CS              GPIO_NUM_10
 #define RG_GPIO_LCD_DC              GPIO_NUM_9
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
-// Çökmeyi engelleyen Hayalet Arka Işık Pini
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_47  
 
 // EKRAN DÜZELTMESİ (ILI9341)
@@ -52,7 +50,7 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (HAYALET DOKUNUŞLARI ÖLDÜREN KOD)
+// ANALOG JOYSTICK (Şimdilik Kapalı - 5000 Eşiği)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
@@ -64,8 +62,17 @@
     {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 5000, 6000}, \
 }
 
-// FİZİKSEL BUTONLAR (Kilitlenmeler temizlendi, sadece BOOT tuşu menüde kaldı)
+// MUHAMMED: İŞTE TUŞLAR UYANDI!
+// Tüm fiziksel butonların bağlantı şeması:
 #define RG_GAMEPAD_GPIO_MAP {\
+    {RG_KEY_UP,     .num = GPIO_NUM_4,  .pullup = 1, .level = 0}, \
+    {RG_KEY_DOWN,   .num = GPIO_NUM_5,  .pullup = 1, .level = 0}, \
+    {RG_KEY_LEFT,   .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
+    {RG_KEY_RIGHT,  .num = GPIO_NUM_7,  .pullup = 1, .level = 0}, \
+    {RG_KEY_A,      .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
+    {RG_KEY_B,      .num = GPIO_NUM_16, .pullup = 1, .level = 0}, \
+    {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
+    {RG_KEY_SELECT, .num = GPIO_NUM_42, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
