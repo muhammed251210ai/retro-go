@@ -1,11 +1,11 @@
 # **************************************************************************
-# * Kynex Sovereign - Launcher Only Build CI v245.0
+# * Kynex Sovereign - Full Core Integration CI v265.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Sadece Retro-Go Launcher'ı (launcher.bin) derler, diğerlerini atlar.
+# * Görev: Launcher ve TÜM Çekirdekleri (Emülatörleri) derleyip birleştirir.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
-name: Sovereign Launcher Only Build v245.0
+name: Sovereign Full Core Integration v265.0
 
 on: [push]
 
@@ -13,7 +13,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  build-launcher:
+  build-sovereign:
     runs-on: ubuntu-latest
     steps:
       - name: Kodu Cek
@@ -22,18 +22,26 @@ jobs:
           submodules: 'recursive'
           fetch-depth: 0
 
-      - name: Sadece Retro-Go Derleme (Launcher - Docker)
+      - name: Sovereign Full Release Derleme (Launcher + Cores)
         run: |
-          # MUHAMMED: KynexOs ve FFat zaten saglam! Sadece Retro-Go'yu (Launcher) derliyoruz.
+          # MUHAMMED: Docker içindeki derleme komutunu 'release' (Full) moduna aldık.
+          # Bu komut NES, SNES, GBA ve DOOM çekirdeklerinin hepsini otomatik derler.
           docker build -t retro-go-builder .
           docker run --name temp-container retro-go-builder /bin/true
           mkdir -p release_bins
+          
+          # Launcher'ı al
           docker cp temp-container:/kynex_out/launcher.bin ./release_bins/launcher.bin
+          
+          # TÜM Çekirdekleri (Bin dosyalarını) al
+          # Not: Docker içinde kynex_out altına kopyaladığımız her şeyi çekiyoruz.
+          docker cp temp-container:/kynex_out/ ./release_bins/all_cores/
+          
           docker rm temp-container
 
-      - name: Sovereign Hizli Paket Yukle
+      - name: Sovereign Mega Paketi Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign_Launcher_Only_v245
-          path: release_bins/launcher.bin
+          name: Sovereign_Full_Edition_v265
+          path: release_bins/
           compression-level: 9
