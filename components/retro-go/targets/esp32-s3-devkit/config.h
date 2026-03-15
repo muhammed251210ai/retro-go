@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Original Display (v244.0)
+/* * RetroGo Configuration - Kynex Sovereign Pin Purifier (v246.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Original Display Pins Restored, Stable UI, HW BOOT Anchor
+ * Özellikler: GPIO Button Conflict (Floating Pin) Fixed, Stable UI
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V244"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V246"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -29,7 +29,7 @@
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (MUHAMMED: Orijinal Çalışan Pinlerine Geri Döndük!)
+// VIDEO (Orijinal Çalışan Ekran Pinleri)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_40M 
@@ -63,17 +63,11 @@
     {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 5000, 6000}, \
 }
 
-// FİZİKSEL BUTONLAR (Kısa basım için GPIO_0 Menu tuşu oldu)
+// FİZİKSEL BUTONLAR (HAYALET DOKUNUŞLARI ÖLDÜREN KOD)
+// MUHAMMED: Kilitlenmeye sebep olan havada asılı (floating) yön ve aksiyon pinleri temizlendi.
+// Sadece kartın üzerindeki donanımsal BOOT tuşu (GPIO 0) Menu olarak bırakıldı.
 #define RG_GAMEPAD_GPIO_MAP {\
-    {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
-    {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
-    {RG_KEY_UP,     .num = GPIO_NUM_4,  .pullup = 1, .level = 0}, \
-    {RG_KEY_DOWN,   .num = GPIO_NUM_5,  .pullup = 1, .level = 0}, \
-    {RG_KEY_LEFT,   .num = GPIO_NUM_7,  .pullup = 1, .level = 0}, \
-    {RG_KEY_RIGHT,  .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
-    {RG_KEY_A,      .num = GPIO_NUM_16, .pullup = 1, .level = 0}, \
-    {RG_KEY_B,      .num = GPIO_NUM_42, .pullup = 1, .level = 0}, \
 }
 
 // KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ (Sistem geçişi BOOT - GPIO 0 tuşunda)
