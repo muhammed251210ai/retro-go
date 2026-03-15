@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Storage Illusionist (v259.0)
+/* * RetroGo Configuration - Kynex Sovereign The Truth (v260.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: VFS /sd Trick for WebUI Uploads, Dual Joystick, Inverted Polarity
+ * Özellikler: Absolute /sd Pathing, WebUI Sync, Dual Joystick Fixed
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,12 +16,12 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V259"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V260"
 
-// STORAGE (MUHAMMED: İŞTE İLLÜZYON BURADA! WebUI'yi Kandırıyoruz)
+// STORAGE (MUHAMMED: TÜM SİSTEM ARTIK /sd DİLİNİ KONUŞUYOR)
 #define RG_STORAGE_DRIVER           2   
-#define RG_STORAGE_ROOT             "/sd"    // WebUI'nin inatla beklediği klasör adı
-#define RG_STORAGE_FLASH_PARTITION  "ffat"   // Gerçekte yazılacak olan senin dahili çipin
+#define RG_STORAGE_ROOT             "/sd"    // Launcher artık buraya bakacak
+#define RG_STORAGE_FLASH_PARTITION  "ffat"   // Fiziksel depo burası
 
 // AUDIO (PWM)
 #define RG_AUDIO_USE_INT_DAC        0   
@@ -29,7 +29,7 @@
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (Orijinal Çalışan Ekran Pinlerin)
+// VIDEO (Orijinal Pinler)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -50,7 +50,7 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (KUTUPLAR TAM TERSİNE ÇEVİRİLDİ!)
+// ANALOG JOYSTICK (90 Derece Düzeltilmiş ve Kutupları Ayarlanmış)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -69,7 +69,7 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
+// KYNEX-OS GEÇİŞ GÖREVİ
 static inline void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
     gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
@@ -86,7 +86,6 @@ static inline void kynex_os_switch_task(void *arg) {
     }
 }
 
-// Sistemi Başlatma Kancası
 #define RG_TARGET_INIT() xTaskCreate(kynex_os_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
