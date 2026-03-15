@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Ghost Pin Edition (v233.0)
+/* * RetroGo Configuration - Kynex Sovereign UI Stabilizer (v237.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: LoadProhibited Crash Fix (Dummy Backlight Pin), Smart Key (GPIO 1)
+ * Özellikler: Extreme ADC Deadzone (Fixes UI Lockup), Smart Key (GPIO 1)
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V233"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V237"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -42,7 +42,7 @@
 #define RG_GPIO_LCD_CS              GPIO_NUM_10
 #define RG_GPIO_LCD_DC              GPIO_NUM_9
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
-// MUHAMMED: Çökmeyi engelleyen Hayalet Pin! Sistem arka ışığı var sanıp buraya yazacak.
+// Çökmeyi engelleyen Hayalet Arka Işık Pini!
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_47  
 
 // EKRAN DÜZELTMESİ (ILI9341)
@@ -51,16 +51,17 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (ADC1 KANALLARI)
+// MUHAMMED: İŞTE HAYALET DOKUNUŞLARI YOK EDEN KALKAN! (Genişletilmiş Ölü Bölge)
+// Eşik değerleri 200 ve 3900 yapıldı. Çubukları tam sona itmeden sistem algılamaz.
 #define RG_GAMEPAD_ADC_MAP {\
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3100, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3100, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 3100, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 3100, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 200},     \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3900, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3900, 4096}, \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 200},     \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 0, 200},     \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 3900, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 3900, 4096}, \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 0, 200},     \
 }
 
 // FİZİKSEL BUTONLAR (Kısa basım için GPIO_1 Menu tuşuna atandı)
@@ -71,7 +72,6 @@
 }
 
 // KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ (Uzun basım için GPIO_1 Dinleniyor)
-// 2 saniye (20 x 100ms) basılı tutarsan sistem KynexOs'a geçer.
 static inline void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_1, GPIO_MODE_INPUT); 
     gpio_set_pull_mode(GPIO_NUM_1, GPIO_PULLUP_ONLY);
