@@ -1,7 +1,4 @@
-# **************************************************************************
-# * Kynex Sovereign - Trojan Horse Build v284.0
-# **************************************************************************
-name: Sovereign Trojan Build v284.0
+name: Sovereign Extractor Build v292.0
 on: [push]
 jobs:
   build-sovereign:
@@ -12,15 +9,15 @@ jobs:
         with:
           submodules: 'recursive'
           fetch-depth: 0
-      - name: Truva Ati Fabrikasini Calistir
+      - name: Fabrikayi Calistir
         run: |
           docker build -t factory .
           docker run --name container factory /bin/true
           mkdir -p output
           docker cp container:/kynex_out/. ./output/
           docker rm container
-      - name: Log ve Bin Paketini Yukle
+      - name: Paketi Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_V284_LOGS
+          name: Kynex_Sovereign_V292_FULL
           path: output/
