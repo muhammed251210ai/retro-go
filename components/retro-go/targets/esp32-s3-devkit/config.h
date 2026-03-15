@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Final Architecture (v256.0)
+/* * RetroGo Configuration - Kynex Sovereign Axis Rotator (v257.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Dual Joystick Mapping, Ghost Pins Destroyed, Stable Display
+ * Özellikler: Dual Joystick 90 Degree Left Rotation, Ghost Pins Destroyed
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,20 +16,20 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V256"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V257"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
 
-// AUDIO (Tek Pin Verdiğin İçin PWM Ayarlandı)
+// AUDIO (Senin Şemana Göre PWM Ayarlandı)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        0   
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (MUHAMMED: Tamamen senin verdiğin özel haritaya göre kilitlendi)
+// VIDEO (Orijinal Çalışan Ekran Pinlerin)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -50,20 +50,21 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (ÇİFT JOYSTICK KUSURSUZ KALİBRASYON)
-// JOY1 (4,5) Yönler | JOY2 (7,15) Aksiyon Tuşları (A, B, X, Y)
+// ANALOG JOYSTICK (MUHAMMED: 90 DERECE SOLA ÇEVİRİLDİ!)
+// Fiziksel YUKARI artık X ekseninin SAĞ'ına, AŞAĞI ise X ekseninin SOL'una denk geliyor.
+// Her iki joystik de 90 derece döndürülerek uyarlandı.
 #define RG_GAMEPAD_ADC_MAP {\
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
 }
 
-// FİZİKSEL BUTONLAR (Kullanmadığın her pin silindi, cihaz artık rüzgardan etkilenmeyecek!)
+// FİZİKSEL BUTONLAR (Kullanmadığın pinler kapalı, hayalet dokunuş yok)
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
