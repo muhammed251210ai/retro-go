@@ -1,8 +1,5 @@
-/* * RetroGo Configuration - Kynex Sovereign Surgical Strike (v286.0)
+/* * RetroGo Configuration - Kynex Sovereign Virtual Drive (v291.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Pure Clean Config, I2S Audio Active, Dual Joystick
- * Donanım: ESP32-S3 N16R8
- * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -16,18 +13,16 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-// Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V286"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V291"
 
-// STORAGE
-#define RG_STORAGE_DRIVER           2   
-#define RG_STORAGE_ROOT             "/sd"    
-#define RG_STORAGE_FLASH_PARTITION  "ffat"   
+// STORAGE - MUHAMMED: İŞTE BURASI KRİTİK!
+#define RG_STORAGE_DRIVER           2              // 2 = Dahili Flash (FFAT)
+#define RG_STORAGE_ROOT             "/sd"          // Yazılım burayı ana dizin sanacak
+#define RG_STORAGE_FLASH_PARTITION  "ffat"         // CSV'deki isimle birebir aynı olmalı!
 
 // AUDIO
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
-#define RG_AUDIO_USE_PWM            0   
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
@@ -47,7 +42,6 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// EKRAN DUZELTMESI
 #define RG_SCREEN_INIT() do { \
     ILI9341_CMD(0x36, 0x28); \
     ILI9341_CMD(0xB1, 0x00, 0x1B); \
@@ -66,30 +60,32 @@
     {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000} \
 }
 
-// FIZIKSEL BUTONLAR
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// KYNEX-OS GECIS GOREVI
 static inline void kynex_boot_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
-    gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
     int kynex_timer = 0;
     while(1) {
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
             kynex_timer++;
             if(kynex_timer > 20) { 
-                const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                if(kynex_part) { esp_ota_set_boot_partition(kynex_part); esp_restart(); }
+                const esp_partition_t* kynex_p = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+                if(kynex_p) { esp_ota_set_boot_partition(kynex_p); esp_restart(); }
             }
         } else { kynex_timer = 0; }
         vTaskDelay(pdMS_TO_TICKS(100)); 
     }
 }
-
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
-#endif /* _RG_TARGET_CONFIG_H_ */
+#undef PS
+#undef BIT
+#undef BIT8
+#undef BIT16
+#undef INTSET
+
+#endif
