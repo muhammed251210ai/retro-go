@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign The Singularity (v265.0)
+/* * RetroGo Configuration - Kynex Sovereign The Monolith (v266.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: All-in-One Core Integration, Forced I2S Audio, Dual Joy Axis Fix
+ * Özellikler: Integrated Internal Cores, Forced I2S, Dual Axis Rotation Fix
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,14 +16,14 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V265"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V266"
 
-// STORAGE (WebUI Hatalarını Bitiren Standart)
+// STORAGE (Launcher ve Cores artık bu yolu ortak kullanıyor)
 #define RG_STORAGE_DRIVER           2   
 #define RG_STORAGE_ROOT             "/sd"    
 #define RG_STORAGE_FLASH_PARTITION  "ffat"   
 
-// AUDIO (MUHAMMED: DUMMY SES MODUNU ÖLDÜRDÜK - ZORUNLU I2S)
+// AUDIO (MAX98357A I2S MODULU - MONOLITIK BAGLANTI)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_USE_PWM            0   
@@ -31,7 +31,7 @@
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
 
-// VIDEO (Senin Orijinal Pin Haritan)
+// VIDEO (Orijinal Kynex Pin Haritası)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -52,7 +52,7 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (90 Derece ve Ters Kutuplar İyileştirildi)
+// ANALOG JOYSTICK (Tam Tur Döndürülmüş ve Kutuplanmış Eksenler)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -64,7 +64,7 @@
     {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
 }
 
-// FİZİKSEL BUTONLAR (Select:6, Start:17, Menu/Boot:0)
+// FİZİKSEL BUTONLAR (Kynex Özel: Select:6, Start:17, Menu:0)
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
