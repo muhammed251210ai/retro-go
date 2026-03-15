@@ -8,16 +8,18 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# MUHAMMED: Emülatör cerrahisi
+# Emülatör cerrahisi
 RUN find retro-core/components/snes9x -type f -exec sed -i 's/\bBIT8\b/SNES_BIT8/g; s/\bBIT16\b/SNES_BIT16/g' {} + || true
 RUN find retro-core/components/handy -type f -exec sed -i 's/\bINTSET\b/HANDY_INTSET/g' {} + || true
 RUN find retro-core/components/handy -type f -exec sed -i 's/\bPS\b/HANDY_PS/g' {} + || true
 
-# MUHAMMED: Derleme komutuna partition table'ı zorla ekletiyoruz!
+# Derleme
 RUN . /opt/esp/idf/export.sh && \
-    python3 rg_tool.py --target=esp32-s3-devkit --partition-table=partitions.csv release > build_log.txt 2>&1 || true
+    python3 rg_tool.py --target=esp32-s3-devkit --partition-table=partitions.csv release
 
+# MUHAMMED: DOSYA TOPLAMA SİHRİ!
+# Kynex_out klasörüne her şeyi kaba kuvvetle kopyalıyoruz.
 RUN mkdir -p /kynex_out && \
-    cp launcher/build/launcher.bin /kynex_out/launcher.bin || true && \
-    cp launcher/build/partition_table/partition-table.bin /kynex_out/partition-table.bin || true && \
-    cp *.img /kynex_out/ || true
+    find . -name "*.bin" -exec cp {} /kynex_out/ \; && \
+    find . -name "*.img" -exec cp {} /kynex_out/ \; && \
+    cp build_log.txt /kynex_out/ || true
