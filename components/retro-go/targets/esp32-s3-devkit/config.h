@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Pin Purifier (v246.0)
+/* * RetroGo Configuration - Kynex Sovereign Visual Restoration (v247.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: GPIO Button Conflict (Floating Pin) Fixed, Stable UI
+ * Özellikler: SPI Speed Restored to 20MHz (Fixes Black Screen), Stable UI
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V246"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V247"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -29,10 +29,10 @@
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (Orijinal Çalışan Ekran Pinleri)
+// VIDEO (MUHAMMED: İŞTE ÇÖZÜM! Ekran hızı tekrar 20MHz'e çekildi)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
-#define RG_SCREEN_SPEED             SPI_MASTER_FREQ_40M 
+#define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
 #define RG_SCREEN_WIDTH             320
 #define RG_SCREEN_HEIGHT            240
 #define RG_SCREEN_ROTATE            1   
@@ -63,9 +63,7 @@
     {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 5000, 6000}, \
 }
 
-// FİZİKSEL BUTONLAR (HAYALET DOKUNUŞLARI ÖLDÜREN KOD)
-// MUHAMMED: Kilitlenmeye sebep olan havada asılı (floating) yön ve aksiyon pinleri temizlendi.
-// Sadece kartın üzerindeki donanımsal BOOT tuşu (GPIO 0) Menu olarak bırakıldı.
+// FİZİKSEL BUTONLAR (Kilitlenmeler temizlendi, sadece BOOT tuşu menüde kaldı)
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
