@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Iron Button (v252.0)
+/* * RetroGo Configuration - Kynex Sovereign Original Arsenal (v255.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Ghost Button Press Fixed, I2S Audio Active
+ * Özellikler: Original User Pins Restored, I2S Audio Active, Stable Display
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V252"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V255"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -45,6 +45,7 @@
 #define RG_GPIO_LCD_CS              GPIO_NUM_10
 #define RG_GPIO_LCD_DC              GPIO_NUM_9
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
+// Çökmeyi engelleyen Hayalet Arka Işık Pini
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_47  
 
 // EKRAN DÜZELTMESİ (ILI9341)
@@ -53,7 +54,7 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (HAYALET DOKUNUŞLARI ÖLDÜREN KOD)
+// ANALOG JOYSTICK (Şimdilik Kapalı - 5000 Eşiği)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
@@ -66,12 +67,17 @@
 }
 
 // FİZİKSEL BUTONLAR 
-// MUHAMMED: Kilitlenmeyi çözmek için şimdilik SADECE YUKARI, AŞAĞI ve A (Seç) tuşunu bıraktım.
-// Bu üç pinden (4, 5, 16) cihaza hiçbir kablo TAKMA! Cihazı boşta aç, menü kilitlenmeyecek.
+// MUHAMMED: Tüm tuşlar senin istediğin orijinal pinlere geri alındı!
+// UYARI: Eğer bu pinlere buton bağlamazsan havada (floating) kalıp kilitlenme yapabilirler.
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_UP,     .num = GPIO_NUM_4,  .pullup = 1, .level = 0}, \
     {RG_KEY_DOWN,   .num = GPIO_NUM_5,  .pullup = 1, .level = 0}, \
-    {RG_KEY_A,      .num = GPIO_NUM_16, .pullup = 1, .level = 0}, \
+    {RG_KEY_LEFT,   .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
+    {RG_KEY_RIGHT,  .num = GPIO_NUM_7,  .pullup = 1, .level = 0}, \
+    {RG_KEY_A,      .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
+    {RG_KEY_B,      .num = GPIO_NUM_16, .pullup = 1, .level = 0}, \
+    {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
+    {RG_KEY_SELECT, .num = GPIO_NUM_42, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
