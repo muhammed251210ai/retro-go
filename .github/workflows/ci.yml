@@ -1,10 +1,15 @@
 # **************************************************************************
 # * Kynex Sovereign - Pure Modular Build CI v267.1
+# * Geliştirici: Muhammed (Kynex)
+# * Güncelleme: Eksik dosya hatalarını önler ve log ekler
 # **************************************************************************
 
 name: Sovereign Modular Build v267.1
 
 on: [push]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Node.js 24’e geçiş için önerilen ayar
 
 jobs:
   build-modular:
@@ -17,12 +22,26 @@ jobs:
 
       - name: Sovereign Modular Derleme (Docker)
         run: |
+          echo "🚀 Docker imajını oluşturuyoruz..."
           docker build -t retro-go-builder .
+          
+          echo "🐳 Docker konteynerini çalıştırıyoruz..."
           docker run --name modular-container retro-go-builder /bin/true
+          
+          echo "📂 release_bins klasörünü oluşturuyoruz..."
           mkdir -p release_bins/apps
           
-          # Artık tüm .bin dosyaları garantili olarak kopyalanıyor
-          docker cp modular-container:/kynex_out/. ./release_bins/apps/
+          echo "📤 Bin dosyalarını konteynerden kopyalıyoruz..."
+          for app in launcher retro-core prboom-go gwenesis fmsx; do
+              if docker exec modular-container test -f "/kynex_out/$app.bin"; then
+                  docker cp modular-container:/kynex_out/$app.bin ./release_bins/apps/
+                  echo "✅ $app.bin başarıyla kopyalandı."
+              else
+                  echo "⚠️ Uyarı: $app.bin bulunamadı!"
+              fi
+          done
+          
+          echo "🗑 Docker konteynerini temizliyoruz..."
           docker rm modular-container
 
       - name: Modüler Paketi Yükle
