@@ -1,47 +1,36 @@
 # **************************************************************************
-# * Kynex Sovereign - Full Core Integration CI v265.0
+# * Kynex Sovereign - Monolithic Build CI v266.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Launcher ve TÜM Çekirdekleri (Emülatörleri) derleyip birleştirir.
-# * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
+# * Görev: Launcher ve tüm çekirdekleri TEK BİR PAKET olarak derler.
 # **************************************************************************
 
-name: Sovereign Full Core Integration v265.0
+name: Sovereign Monolithic Build v266.0
 
 on: [push]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-
 jobs:
-  build-sovereign:
+  build-monolith:
     runs-on: ubuntu-latest
     steps:
       - name: Kodu Cek
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
-          fetch-depth: 0
 
-      - name: Sovereign Full Release Derleme (Launcher + Cores)
+      - name: Sovereign Monolith Derleme (Docker)
         run: |
-          # MUHAMMED: Docker içindeki derleme komutunu 'release' (Full) moduna aldık.
-          # Bu komut NES, SNES, GBA ve DOOM çekirdeklerinin hepsini otomatik derler.
+          # MUHAMMED: Docker içindeki rg_tool komutunu 'all' hedefine çevirdik.
+          # Bu sayede launcher derlenirken NES, GB, Doom çekirdeklerini de içine mühürler.
           docker build -t retro-go-builder .
-          docker run --name temp-container retro-go-builder /bin/true
+          docker run --name monolith-container retro-go-builder /bin/true
           mkdir -p release_bins
           
-          # Launcher'ı al
-          docker cp temp-container:/kynex_out/launcher.bin ./release_bins/launcher.bin
-          
-          # TÜM Çekirdekleri (Bin dosyalarını) al
-          # Not: Docker içinde kynex_out altına kopyaladığımız her şeyi çekiyoruz.
-          docker cp temp-container:/kynex_out/ ./release_bins/all_cores/
-          
-          docker rm temp-container
+          # İşte her şeyin birleştiği an!
+          docker cp monolith-container:/kynex_out/. ./release_bins/
+          docker rm monolith-container
 
-      - name: Sovereign Mega Paketi Yukle
+      - name: Monolitik Paketi Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign_Full_Edition_v265
+          name: Sovereign_Monolith_v266
           path: release_bins/
-          compression-level: 9
