@@ -1,4 +1,4 @@
-/* * RetroGo Configuration - Kynex Sovereign Virtual Drive (v291.0)
+/* * RetroGo Configuration - Kynex Sovereign The Extractor (v292.0)
  * Geliştirici: Muhammed (Kynex)
  */
 
@@ -13,12 +13,12 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V291"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V292"
 
-// STORAGE - MUHAMMED: İŞTE BURASI KRİTİK!
-#define RG_STORAGE_DRIVER           2              // 2 = Dahili Flash (FFAT)
-#define RG_STORAGE_ROOT             "/sd"          // Yazılım burayı ana dizin sanacak
-#define RG_STORAGE_FLASH_PARTITION  "ffat"         // CSV'deki isimle birebir aynı olmalı!
+// STORAGE - MUHAMMED: Dahili hafızayı SD Kart yapıyoruz!
+#define RG_STORAGE_DRIVER           2              
+#define RG_STORAGE_ROOT             "/sd"          
+#define RG_STORAGE_FLASH_PARTITION  "ffat"         
 
 // AUDIO
 #define RG_AUDIO_USE_INT_DAC        0   
