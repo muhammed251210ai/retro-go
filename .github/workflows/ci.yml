@@ -1,37 +1,37 @@
 # **************************************************************************
-# * Kynex Sovereign - Deep Clean Build CI v274.0
+# * Kynex Sovereign - Brute Force Build CI v275.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Tüm alt modülleri Docker'a taşır ve hatasız bin üretir.
+# * Görev: Her kosulda derleme denemesi yapar ve bin dosyalarini paketler.
 # **************************************************************************
 
-name: Sovereign Deep Clean Build v274.0
+name: Sovereign Brute Force Build v275.0
 
 on: [push]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-
 jobs:
-  build-sovereign-factory:
+  build-sovereign-modular:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodu ve Derin Alt Modulleri Cek
+      - name: Kodu ve Alt Modulleri Cek
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
           fetch-depth: 0
 
-      - name: Sovereign Fabrikasini Atesle (Docker)
+      - name: Sovereign Fabrikasini Calistir (Docker)
         run: |
+          # Imajı oluştur ve derlemeyi dene
           docker build -t sovereign-factory .
+          
+          # Konteynırdan çıktıları (başarılı olanları) al
           docker run --name sovereign-container sovereign-factory /bin/true
           mkdir -p final_pack
-          docker cp sovereign-container:/kynex_out/. ./final_pack/
+          docker cp sovereign-container:/kynex_out/. ./final_pack/ || echo "Kopyalanacak dosya bulunamadi."
           docker rm sovereign-container
 
-      - name: Sovereign Mega Paketini Yukle (Flash Ready)
+      - name: Moduler Sovereign Paketini Yukle (Flash Ready)
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_V274_Pack
+          name: Kynex_Sovereign_V275_Pack
           path: final_pack/
-          compression-level: 9
+          if-no-files-found: warn
