@@ -1,8 +1,12 @@
+# **************************************************************************
+# * Kynex Sovereign - Flawless Dockerfile v277.0
+# **************************************************************************
 FROM espressif/idf:release-v4.4
+
 WORKDIR /app
 SHELL ["/bin/bash", "-c"]
 
-# Sistem Hazırlığı
+# Git ve Bagimliliklar
 RUN git config --global --add safe.directory '*' && \
     apt-get update && apt-get install -y python3-pip git curl && \
     python3 -m pip install --upgrade pip && \
@@ -10,11 +14,11 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# MUHAMMED: Derleme adımı. Hata verirse 'idf.py' çıktısını tam göreceğiz.
+# MUHAMMED: Derleme komutu. Hata varsa logu tam detayli gorelim.
 RUN . /opt/esp/idf/export.sh && \
     python3 rg_tool.py --target=esp32-s3-devkit release
 
-# Çıktı Toplama
+# Çıktıları Klasöre Topla
 RUN mkdir -p /kynex_out && \
     cp build/bootloader/bootloader.bin /kynex_out/bootloader.bin && \
     cp build/partition_table/partition-table.bin /kynex_out/partition-table.bin && \
