@@ -1,7 +1,4 @@
-# **************************************************************************
-# * Kynex Sovereign - Reconnaissance Build v280.0
-# **************************************************************************
-name: Sovereign Reconnaissance Build v280.0
+name: Sovereign Victory Build v281.0
 on: [push]
 jobs:
   build-sovereign:
@@ -12,15 +9,15 @@ jobs:
         with:
           submodules: 'recursive'
           fetch-depth: 0
-      - name: Fabrikayi Calistir ve Ajan Loglari Topla
+      - name: Zafer Fabrikasini Calistir
         run: |
           docker build -t factory .
           docker run --name container factory /bin/true
           mkdir -p output
           docker cp container:/kynex_out/. ./output/
           docker rm container
-      - name: Ajan Raporunu Yukle
+      - name: Uretilen Paketi Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_V280_LOGS
+          name: Kynex_Sovereign_V281
           path: output/
