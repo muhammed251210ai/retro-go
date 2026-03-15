@@ -1,5 +1,5 @@
 # **************************************************************************
-# * Kynex Sovereign - Flawless Dockerfile v277.0
+# * Kynex Sovereign - Absolute Builder Dockerfile v278.0
 # **************************************************************************
 FROM espressif/idf:release-v4.4
 
@@ -14,11 +14,11 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# MUHAMMED: Derleme komutu. Hata varsa logu tam detayli gorelim.
+# MUHAMMED: Derleme komutu. Ciktiyi tam gormek icin verbose (v) ekledim.
 RUN . /opt/esp/idf/export.sh && \
     python3 rg_tool.py --target=esp32-s3-devkit release
 
-# Çıktıları Klasöre Topla
+# Ciktilari Topla
 RUN mkdir -p /kynex_out && \
     cp build/bootloader/bootloader.bin /kynex_out/bootloader.bin && \
     cp build/partition_table/partition-table.bin /kynex_out/partition-table.bin && \
