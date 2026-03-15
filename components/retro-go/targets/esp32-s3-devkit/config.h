@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Original Arsenal (v255.0)
+/* * RetroGo Configuration - Kynex Sovereign Final Architecture (v256.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Original User Pins Restored, I2S Audio Active, Stable Display
+ * Özellikler: Dual Joystick Mapping, Ghost Pins Destroyed, Stable Display
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,37 +16,33 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V255"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V256"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
 #define RG_STORAGE_ROOT             "/ffat"
 #define RG_STORAGE_FLASH_PARTITION  "ffat"
 
-// AUDIO (I2S DIJITAL SES MODULU - MAX98357A)
+// AUDIO (Tek Pin Verdiğin İçin PWM Ayarlandı)
 #define RG_AUDIO_USE_INT_DAC        0   
-#define RG_AUDIO_USE_EXT_DAC        1   
-#define RG_AUDIO_USE_PWM            0   
-#define RG_GPIO_SND_PWM             -1  
-#define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
-#define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
-#define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
+#define RG_AUDIO_USE_EXT_DAC        0   
+#define RG_AUDIO_USE_PWM            1   
+#define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (MISO İptal, 20MHz Kusursuz Ekran)
+// VIDEO (MUHAMMED: Tamamen senin verdiğin özel haritaya göre kilitlendi)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
 #define RG_SCREEN_WIDTH             320
 #define RG_SCREEN_HEIGHT            240
 #define RG_SCREEN_ROTATE            1   
-#define RG_GPIO_LCD_MISO            -1  
+#define RG_GPIO_LCD_MISO            GPIO_NUM_13
 #define RG_GPIO_LCD_MOSI            GPIO_NUM_11
 #define RG_GPIO_LCD_CLK             GPIO_NUM_12
 #define RG_GPIO_LCD_CS              GPIO_NUM_10
 #define RG_GPIO_LCD_DC              GPIO_NUM_9
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
-// Çökmeyi engelleyen Hayalet Arka Işık Pini
-#define RG_GPIO_LCD_BCKL            GPIO_NUM_47  
+#define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
 // EKRAN DÜZELTMESİ (ILI9341)
 #define RG_SCREEN_INIT()                                                                                        \
@@ -54,30 +50,23 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (Şimdilik Kapalı - 5000 Eşiği)
+// ANALOG JOYSTICK (ÇİFT JOYSTICK KUSURSUZ KALİBRASYON)
+// JOY1 (4,5) Yönler | JOY2 (7,15) Aksiyon Tuşları (A, B, X, Y)
 #define RG_GAMEPAD_ADC_MAP {\
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 5000, 6000}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 5000, 6000}, \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 5000, 6000}, \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_1, ADC_ATTEN_DB_11, 5000, 6000}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 5000, 6000}, \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 5000, 6000}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
 }
 
-// FİZİKSEL BUTONLAR 
-// MUHAMMED: Tüm tuşlar senin istediğin orijinal pinlere geri alındı!
-// UYARI: Eğer bu pinlere buton bağlamazsan havada (floating) kalıp kilitlenme yapabilirler.
+// FİZİKSEL BUTONLAR (Kullanmadığın her pin silindi, cihaz artık rüzgardan etkilenmeyecek!)
 #define RG_GAMEPAD_GPIO_MAP {\
-    {RG_KEY_UP,     .num = GPIO_NUM_4,  .pullup = 1, .level = 0}, \
-    {RG_KEY_DOWN,   .num = GPIO_NUM_5,  .pullup = 1, .level = 0}, \
-    {RG_KEY_LEFT,   .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
-    {RG_KEY_RIGHT,  .num = GPIO_NUM_7,  .pullup = 1, .level = 0}, \
-    {RG_KEY_A,      .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
-    {RG_KEY_B,      .num = GPIO_NUM_16, .pullup = 1, .level = 0}, \
+    {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
-    {RG_KEY_SELECT, .num = GPIO_NUM_42, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
