@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign UI Stabilizer (v237.0)
+/* * RetroGo Configuration - Kynex Sovereign Silent Pin Edition (v238.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Extreme ADC Deadzone (Fixes UI Lockup), Smart Key (GPIO 1)
+ * Özellikler: UART TX Conflict Fixed (Moved to GPIO 21), Extreme Deadzones
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V237"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V238"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -42,7 +42,7 @@
 #define RG_GPIO_LCD_CS              GPIO_NUM_10
 #define RG_GPIO_LCD_DC              GPIO_NUM_9
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
-// Çökmeyi engelleyen Hayalet Arka Işık Pini!
+// Çökmeyi engelleyen Hayalet Arka Işık Pini (GPIO_NUM_47)
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_47  
 
 // EKRAN DÜZELTMESİ (ILI9341)
@@ -51,8 +51,7 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// MUHAMMED: İŞTE HAYALET DOKUNUŞLARI YOK EDEN KALKAN! (Genişletilmiş Ölü Bölge)
-// Eşik değerleri 200 ve 3900 yapıldı. Çubukları tam sona itmeden sistem algılamaz.
+// ANALOG JOYSTICK (Genişletilmiş Ölü Bölge Kalkanı)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 200},     \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3900, 4096}, \
@@ -64,20 +63,20 @@
     {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 0, 200},     \
 }
 
-// FİZİKSEL BUTONLAR (Kısa basım için GPIO_1 Menu tuşuna atandı)
+// MUHAMMED: İŞTE ÇÖZÜM! Tuş GPIO_1'den (TX0), sessiz ve güvenli GPIO_21'e alındı.
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
-    {RG_KEY_MENU,   .num = GPIO_NUM_1,  .pullup = 1, .level = 0}, \
+    {RG_KEY_MENU,   .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
 }
 
-// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ (Uzun basım için GPIO_1 Dinleniyor)
+// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ (Uzun basım için artık GPIO_21 Dinleniyor)
 static inline void kynex_os_switch_task(void *arg) {
-    gpio_set_direction(GPIO_NUM_1, GPIO_MODE_INPUT); 
-    gpio_set_pull_mode(GPIO_NUM_1, GPIO_PULLUP_ONLY);
+    gpio_set_direction(GPIO_NUM_21, GPIO_MODE_INPUT); 
+    gpio_set_pull_mode(GPIO_NUM_21, GPIO_PULLUP_ONLY);
     int kynex_timer = 0;
     while(1) {
-        if(gpio_get_level(GPIO_NUM_1) == 0) { 
+        if(gpio_get_level(GPIO_NUM_21) == 0) { 
             kynex_timer++;
             if(kynex_timer > 20) { 
                 const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
