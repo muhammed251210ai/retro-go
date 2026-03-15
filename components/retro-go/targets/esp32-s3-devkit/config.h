@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Absolute Truth (v278.0)
+/* * RetroGo Configuration - Kynex Sovereign Zero-Space (v279.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Fixed Syntax Logic, I2S Audio Active, Dual Joystick Calibration
+ * Özellikler: Syntax Logic Fix, I2S Audio Active, Dual Joystick Calibration
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -17,7 +17,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V278"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V279"
 
 // STORAGE (WebUI uyumlu /sd yolu)
 #define RG_STORAGE_DRIVER           2   
@@ -47,14 +47,14 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// EKRAN DUZELTMESI (Hata vermemesi icin korumali blok)
+// EKRAN DUZELTMESI (Hata vermemesi icin korumali blok - Ters bölüler denetlendi)
 #define RG_SCREEN_INIT() do { \
     ILI9341_CMD(0x36, 0x28); \
     ILI9341_CMD(0xB1, 0x00, 0x1B); \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK (ADC Haritasi - Bosluksuz ve Hatasiz Dizilim)
+// ANALOG JOYSTICK (ADC Haritasi - Her satırın sonunda sadece bir ters bölü var)
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
