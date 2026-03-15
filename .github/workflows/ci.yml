@@ -1,10 +1,10 @@
 # **************************************************************************
-# * Kynex Sovereign - Bulletproof Modular CI v271.0
+# * Kynex Sovereign - Architect's Resolution CI v272.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Tüm alt modülleri Docker'a taşır ve hatasız bin üretir.
+# * Görev: Dosya izinlerini ve alt modülleri Docker için mükemmel hazırlar.
 # **************************************************************************
 
-name: Sovereign Bulletproof Build v271.0
+name: Sovereign Architect Build v272.0
 
 on: [push]
 
@@ -12,29 +12,32 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  build-sovereign-modular:
+  build-sovereign-architect:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodu ve Alt Modulleri Cek
+      - name: Kodu ve Derin Alt Modulleri Cek
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive' # MUHAMMED: Bu satır hayat kurtarır!
+          submodules: 'recursive'
           fetch-depth: 0
 
-      - name: Sovereign Fabrikasini Calistir
+      - name: Dosya Izinlerini Ayarla
+        run: chmod -R 777 . # MUHAMMED: Docker'ın dosyalara erişimini garanti ediyoruz.
+
+      - name: Sovereign Fabrikasini Atesle
         run: |
           # Docker imajını oluştur
           docker build -t sovereign-factory .
           
-          # Konteynırdan çıktıları final_pack klasörüne çek
+          # Konteynırdan çıktıları al
           docker run --name sovereign-container sovereign-factory /bin/true
           mkdir -p final_pack
           docker cp sovereign-container:/kynex_out/. ./final_pack/
           docker rm sovereign-container
 
-      - name: Moduler Sovereign Paketini Yukle
+      - name: Sovereign Mega Paketini Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_Modular_v271
+          name: Kynex_Sovereign_Final_v272
           path: final_pack/
           compression-level: 9
