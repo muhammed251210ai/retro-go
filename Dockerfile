@@ -1,7 +1,7 @@
 # **************************************************************************
-# * Kynex Sovereign - Lynx Protector Dockerfile v287.0
+# * Kynex Sovereign - Precision Strike Dockerfile v288.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Handy (Lynx) emülatöründeki PS çakışmasını kökten çözer.
+# * Görev: Doğru klasör yolları (retro-core/*) ile kesin cerrahi müdahale!
 # **************************************************************************
 FROM espressif/idf:release-v4.4
 
@@ -15,16 +15,16 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# MUHAMMED: DERİN CERRAHİ!
-# SNES çakışmaları zaten çözülmüştü, şimdi Handy (Lynx) içindeki PS çakışmasını çözüyoruz!
-RUN find components/snes9x -type f -exec sed -i 's/\bBIT8\b/SNES_BIT8/g; s/\bBIT16\b/SNES_BIT16/g' {} + || true && \
-    find components/handy -type f -exec sed -i 's/\bINTSET\b/HANDY_INTSET/g' {} + || true && \
-    find components/handy -type f -exec sed -i 's/\bPS\b/HANDY_PS/g' {} + || true && \
-    find components/handy -type f -exec sed -i 's/\bmPS\b/mHANDY_PS/g' {} + || true && \
-    sed -i 's/#define BIT(n,r)/#undef BIT\n#define BIT(n,r)/g' components/gnuboy/cpu.c || true && \
-    sed -i 's/#define BIT(cycles,/#undef BIT\n#define BIT(cycles,/g' components/nofrendo/nes/cpu.c || true
+# MUHAMMED: İŞTE KOORDİNATLARI DÜZELTTİK! 
+# Emülatörler 'retro-core' klasörünün içindeymiş. Her komutu ayrı satıra aldık ki biri takılsa bile diğeri çalışsın.
+RUN find retro-core/components/snes9x -type f -exec sed -i 's/\bBIT8\b/SNES_BIT8/g; s/\bBIT16\b/SNES_BIT16/g' {} + || true
+RUN find retro-core/components/handy -type f -exec sed -i 's/\bINTSET\b/HANDY_INTSET/g' {} + || true
+RUN find retro-core/components/handy -type f -exec sed -i 's/\bPS\b/HANDY_PS/g' {} + || true
+RUN find retro-core/components/handy -type f -exec sed -i 's/\bmPS\b/mHANDY_PS/g' {} + || true
+RUN sed -i 's/#define BIT(n,r)/#undef BIT\n#define BIT(n,r)/g' retro-core/components/gnuboy/cpu.c || true
+RUN sed -i 's/#define BIT(cycles,/#undef BIT\n#define BIT(cycles,/g' retro-core/components/nofrendo/nes/cpu.c || true
 
-# Derleme Aşaması (Truva Atı modunda, çökerse logları verir)
+# Derleme Aşaması (Truva Atı log koruması hala devrede)
 RUN mkdir -p /kynex_out && \
     . /opt/esp/idf/export.sh && \
     rm -rf build sdkconfig sdkconfig.old && \
