@@ -1,4 +1,4 @@
-name: Sovereign Extractor Build v292.0
+name: Sovereign Juggernaut Build v293.0
 on: [push]
 jobs:
   build-sovereign:
@@ -9,15 +9,16 @@ jobs:
         with:
           submodules: 'recursive'
           fetch-depth: 0
-      - name: Fabrikayi Calistir
+      - name: Juggernaut Fabrikasini Calistir
         run: |
           docker build -t factory .
-          docker run --name container factory /bin/true
+          # Konteynırdan dosyaları kopyalamak için geçici bir isim veriyoruz
+          docker create --name kynex_container factory
           mkdir -p output
-          docker cp container:/kynex_out/. ./output/
-          docker rm container
+          docker cp kynex_container:/kynex_out/. ./output/
+          docker rm kynex_container
       - name: Paketi Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_V292_FULL
+          name: Kynex_Sovereign_V293_Final
           path: output/
