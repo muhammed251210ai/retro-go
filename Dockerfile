@@ -8,23 +8,26 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# MUHAMMED: EMÜLATÖR CERRAHİSİ (Sadece emülatör dosyalarında isim değiştiriyoruz)
+# EMÜLATÖR CERRAHİSİ (Aynen devam)
 RUN find retro-core/components/snes9x -type f -exec sed -i 's/\bBIT8\b/SNES_BIT8/g; s/\bBIT16\b/SNES_BIT16/g' {} + || true
 RUN find retro-core/components/handy -type f -exec sed -i 's/\bINTSET\b/HANDY_INTSET/g' {} + || true
 RUN find retro-core/components/handy -type f -exec sed -i 's/\bPS\b/HANDY_PS/g' {} + || true
-RUN sed -i 's/#define BIT(n,r)/#undef BIT\n#define BIT(n,r)/g' retro-core/components/gnuboy/cpu.c || true
-RUN sed -i 's/#define BIT(cycles,/#undef BIT\n#define BIT(cycles,/g' retro-core/components/nofrendo/nes/cpu.c || true
 
-# MUHAMMED: 16MB Hafıza Kartı Desteği
+# MUHAMMED: ZORLAYICI AYARLAR! 
+# Derleyicinin bizim CSV'mizi kullanması için sdkconfig'i manipüle ediyoruz.
 RUN mkdir -p components/retro-go/targets/esp32-s3-devkit/ && \
-    cp partitions.csv components/retro-go/targets/esp32-s3-devkit/partitions.csv || true
+    cp partitions.csv components/retro-go/targets/esp32-s3-devkit/partitions.csv && \
+    cp partitions.csv launcher/partitions.csv && \
+    cp partitions.csv retro-core/partitions.csv
 
-# Derleme Aşaması (Logları build_log.txt dosyasına mühürlüyoruz)
-RUN mkdir -p /kynex_out && \
-    . /opt/esp/idf/export.sh && \
+# Derleme ve sdkconfig zorlaması
+RUN . /opt/esp/idf/export.sh && \
     rm -rf build sdkconfig sdkconfig.old && \
-    python3 rg_tool.py --target=esp32-s3-devkit release > /kynex_out/build_log.txt 2>&1 || (echo "Hata! Son 100 satır:" && tail -n 100 /kynex_out/build_log.txt && exit 1)
+    python3 rg_tool.py --target=esp32-s3-devkit config && \
+    sed -i 's/CONFIG_PARTITION_TABLE_CUSTOM=n/CONFIG_PARTITION_TABLE_CUSTOM=y/g' sdkconfig && \
+    sed -i 's/CONFIG_PARTITION_TABLE_FILENAME=.*/CONFIG_PARTITION_TABLE_FILENAME="partitions.csv"/g' sdkconfig && \
+    python3 rg_tool.py --target=esp32-s3-devkit release
 
-# BIN ve o meşhur IMG Dosyasını Topla
-RUN find . -maxdepth 3 -name "*.img" -exec cp {} /kynex_out/kynex_full_system.img \; || true && \
+RUN mkdir -p /kynex_out && \
+    find . -maxdepth 3 -name "*.img" -exec cp {} /kynex_out/kynex_full_system.img \; || true && \
     find . -name "*.bin" -exec cp {} /kynex_out/ \; || true
