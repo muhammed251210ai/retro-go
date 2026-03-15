@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Axis Rotator (v257.0)
+/* * RetroGo Configuration - Kynex Sovereign Storage Illusionist (v259.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Dual Joystick 90 Degree Left Rotation, Ghost Pins Destroyed
+ * Özellikler: VFS /sd Trick for WebUI Uploads, Dual Joystick, Inverted Polarity
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,14 +16,14 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V257"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V259"
 
-// STORAGE (Dahili Hafıza Mühürlendi)
+// STORAGE (MUHAMMED: İŞTE İLLÜZYON BURADA! WebUI'yi Kandırıyoruz)
 #define RG_STORAGE_DRIVER           2   
-#define RG_STORAGE_ROOT             "/ffat"
-#define RG_STORAGE_FLASH_PARTITION  "ffat"
+#define RG_STORAGE_ROOT             "/sd"    // WebUI'nin inatla beklediği klasör adı
+#define RG_STORAGE_FLASH_PARTITION  "ffat"   // Gerçekte yazılacak olan senin dahili çipin
 
-// AUDIO (Senin Şemana Göre PWM Ayarlandı)
+// AUDIO (PWM)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        0   
 #define RG_AUDIO_USE_PWM            1   
@@ -50,28 +50,26 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (MUHAMMED: 90 DERECE SOLA ÇEVİRİLDİ!)
-// Fiziksel YUKARI artık X ekseninin SAĞ'ına, AŞAĞI ise X ekseninin SOL'una denk geliyor.
-// Her iki joystik de 90 derece döndürülerek uyarlandı.
+// ANALOG JOYSTICK (KUTUPLAR TAM TERSİNE ÇEVİRİLDİ!)
 #define RG_GAMEPAD_ADC_MAP {\
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
 }
 
-// FİZİKSEL BUTONLAR (Kullanmadığın pinler kapalı, hayalet dokunuş yok)
+// FİZİKSEL BUTONLAR
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ (Sistem geçişi BOOT - GPIO 0 tuşunda)
+// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
 static inline void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
     gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
