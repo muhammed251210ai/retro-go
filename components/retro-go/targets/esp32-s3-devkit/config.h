@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Joystick Calibrator (v240.0)
+/* * RetroGo Configuration - Kynex Sovereign Typo Fixer (v241.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Calibrated ADC Deadzones, Hardware BOOT Anchor, Stable UI
+ * Özellikler: RG_SCREEN_WIDTH Typo Fixed, Calibrated ADC, HW BOOT Anchor
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V240"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V241"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -33,7 +33,8 @@
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
-#define screening_WIDTH             320
+// MUHAMMED: İŞTE O UTANÇ VERİCİ HATA DÜZELTİLDİ!
+#define RG_SCREEN_WIDTH             320
 #define RG_SCREEN_HEIGHT            240
 #define RG_SCREEN_ROTATE            1   // 90 Derece Yatay Kilit
 #define RG_GPIO_LCD_MISO            GPIO_NUM_13
@@ -51,8 +52,7 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// MUHAMMED: İŞTE GERÇEK DÜNYA KALİBRASYONU!
-// Eşik değerleri 1000 ve 3000 yapıldı. Çubuğu hafif ittiğinde bile sistem algılayacak.
+// ANALOG JOYSTICK (GERÇEK DÜNYA KALİBRASYONU - 1000 ve 3000 Eşikleri)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
