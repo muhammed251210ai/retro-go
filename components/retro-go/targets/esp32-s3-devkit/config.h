@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Logic (v277.0)
+/* * RetroGo Configuration - Kynex Sovereign Absolute Truth (v278.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Syntax Logic Fix, I2S Audio Active, Dual Joystick Calibration
+ * Özellikler: Fixed Syntax Logic, I2S Audio Active, Dual Joystick Calibration
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -17,9 +17,9 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V277"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V278"
 
-// STORAGE (WebUI uyumlu klasör yapısı)
+// STORAGE (WebUI uyumlu /sd yolu)
 #define RG_STORAGE_DRIVER           2   
 #define RG_STORAGE_ROOT             "/sd"    
 #define RG_STORAGE_FLASH_PARTITION  "ffat"   
@@ -32,7 +32,7 @@
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
 
-// VIDEO (Orijinal Kynex Pin Haritası)
+// VIDEO (Orijinal Kynex Pin Haritasi)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -47,33 +47,33 @@
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_1  
 
-// EKRAN DÜZELTMESİ (Makro hatasını engellemek için tek blok)
-#define RG_SCREEN_INIT() { \
+// EKRAN DUZELTMESI (Hata vermemesi icin korumali blok)
+#define RG_SCREEN_INIT() do { \
     ILI9341_CMD(0x36, 0x28); \
     ILI9341_CMD(0xB1, 0x00, 0x1B); \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
-}
+} while(0)
 
-// ANALOG JOYSTICK (ADC Haritası - Tüm ters slaşlar ve virgüller denetlendi)
+// ANALOG JOYSTICK (ADC Haritasi - Bosluksuz ve Hatasiz Dizilim)
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
     {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000}, \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
     {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000}     \
+    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000} \
 }
 
-// FİZİKSEL BUTONLAR
+// FIZIKSEL BUTONLAR
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
+// KYNEX-OS (OTA_0) GECIS GOREVI
 static inline void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
     gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
