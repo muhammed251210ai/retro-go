@@ -1,4 +1,4 @@
-name: Sovereign Debugged Build v276.0
+name: Sovereign Zero-Space Build v279.0
 on: [push]
 jobs:
   build-sovereign:
@@ -16,8 +16,8 @@ jobs:
           mkdir -p output
           docker cp container:/kynex_out/. ./output/
           docker rm container
-      - name: Full Paketi Yukle
+      - name: Paket Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_V276
+          name: Kynex_Sovereign_V279
           path: output/
