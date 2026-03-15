@@ -1,7 +1,5 @@
 # **************************************************************************
-# * Kynex Sovereign - Modular Build CI + Menü Hazır v267.1
-# * Geliştirici: Muhammed (Kynex)
-# * Görev: Launcher ve çekirdekleri ayrı .bin/.app dosyaları olarak derler ve apps.list oluşturur
+# * Kynex Sovereign - Pure Modular Build CI v267.1
 # **************************************************************************
 
 name: Sovereign Modular Build v267.1
@@ -12,39 +10,23 @@ jobs:
   build-modular:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodu Cek
+      - name: Kodu Çek
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
 
       - name: Sovereign Modular Derleme (Docker)
         run: |
-          # Docker içinde her emülatörü ayrı bin dosyası olarak derle
           docker build -t retro-go-builder .
           docker run --name modular-container retro-go-builder /bin/true
-          mkdir -p release_bins
-          
-          # Tüm bin/app dosyalarını dışarı aktar
-          docker cp modular-container:/kynex_out/. ./release_bins/
-          docker rm modular-container
-
-      - name: Modüler Paketi Hazirla (Menüye ekle)
-        run: |
           mkdir -p release_bins/apps
           
-          # Launcher ve çekirdekleri apps klasörüne kopyala
-          for f in release_bins/*.{bin,app}; do
-            cp "$f" release_bins/apps/
-          done
+          # Artık tüm .bin dosyaları garantili olarak kopyalanıyor
+          docker cp modular-container:/kynex_out/. ./release_bins/apps/
+          docker rm modular-container
 
-          # apps.list dosyasını oluştur (Retro-Go menüsü için)
-          echo "# Otomatik oluşturuldu: Launcher ve çekirdekler" > release_bins/apps/apps.list
-          for appfile in release_bins/apps/*.{bin,app}; do
-            echo "$(basename $appfile)" >> release_bins/apps/apps.list
-          done
-
-      - name: Modüler Paketi Yukle (Artifact)
+      - name: Modüler Paketi Yükle
         uses: actions/upload-artifact@v4
         with:
           name: Sovereign_Modular_v267
-          path: release_bins/
+          path: release_bins/apps/
