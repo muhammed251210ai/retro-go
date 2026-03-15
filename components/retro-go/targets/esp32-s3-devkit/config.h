@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Visual Restoration (v247.0)
+/* * RetroGo Configuration - Kynex Sovereign Final Display (v248.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: SPI Speed Restored to 20MHz (Fixes Black Screen), Stable UI
+ * Özellikler: MISO Disabled (-1), 20MHz SPI, Perfect UI Stability
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V247"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V248"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -29,14 +29,15 @@
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (MUHAMMED: İŞTE ÇÖZÜM! Ekran hızı tekrar 20MHz'e çekildi)
+// VIDEO (MUHAMMED: İŞTE ÇÖZÜM! Takılı olmayan MISO pini -1 yapıldı)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
 #define RG_SCREEN_WIDTH             320
 #define RG_SCREEN_HEIGHT            240
 #define RG_SCREEN_ROTATE            1   
-#define RG_GPIO_LCD_MISO            GPIO_NUM_13
+// MISO İPTAL EDİLDİ! Sistem artık kör bekleme yapmayacak.
+#define RG_GPIO_LCD_MISO            -1  
 #define RG_GPIO_LCD_MOSI            GPIO_NUM_11
 #define RG_GPIO_LCD_CLK             GPIO_NUM_12
 #define RG_GPIO_LCD_CS              GPIO_NUM_10
