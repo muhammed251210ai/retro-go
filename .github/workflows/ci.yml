@@ -1,37 +1,23 @@
-# **************************************************************************
-# * Kynex Sovereign - Brute Force Build CI v275.0
-# * Geliştirici: Muhammed (Kynex)
-# * Görev: Her kosulda derleme denemesi yapar ve bin dosyalarini paketler.
-# **************************************************************************
-
-name: Sovereign Brute Force Build v275.0
-
+name: Sovereign Debugged Build v276.0
 on: [push]
-
 jobs:
-  build-sovereign-modular:
+  build-sovereign:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodu ve Alt Modulleri Cek
+      - name: Kodu Cek
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
           fetch-depth: 0
-
-      - name: Sovereign Fabrikasini Calistir (Docker)
+      - name: Fabrikayi Calistir
         run: |
-          # Imajı oluştur ve derlemeyi dene
-          docker build -t sovereign-factory .
-          
-          # Konteynırdan çıktıları (başarılı olanları) al
-          docker run --name sovereign-container sovereign-factory /bin/true
-          mkdir -p final_pack
-          docker cp sovereign-container:/kynex_out/. ./final_pack/ || echo "Kopyalanacak dosya bulunamadi."
-          docker rm sovereign-container
-
-      - name: Moduler Sovereign Paketini Yukle (Flash Ready)
+          docker build -t factory .
+          docker run --name container factory /bin/true
+          mkdir -p output
+          docker cp container:/kynex_out/. ./output/
+          docker rm container
+      - name: Full Paketi Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_V275_Pack
-          path: final_pack/
-          if-no-files-found: warn
+          name: Kynex_Sovereign_V276
+          path: output/
