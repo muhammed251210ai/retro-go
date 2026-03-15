@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Conflict Resolver (v281.0)
+/* * RetroGo Configuration - Kynex Sovereign Core Protector (v282.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Redefinition Fix, I2S Audio Active, Dual Joystick Calibration
+ * Özellikler: Xtensa PS Macro Fix, I2S Audio, Dual Joystick, /sd Path
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -17,7 +17,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V281"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V282"
 
 // STORAGE
 #define RG_STORAGE_DRIVER           2   
@@ -74,7 +74,6 @@
 }
 
 // KYNEX-OS GECIS GOREVI
-// MUHAMMED: İSİM ÇAKIŞMASINI ÖNLEMEK İÇİN FONKSİYON ADINI DEĞİŞTİRDİM!
 static inline void kynex_boot_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
     gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
@@ -91,7 +90,9 @@ static inline void kynex_boot_switch_task(void *arg) {
     }
 }
 
-// MUHAMMED: Makroyu yeni isme göre güncelledim!
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
+
+// MUHAMMED: Xtensa 'PS' makrosu iptal ediliyor. Emülatörler artık özgürce derlenecek!
+#undef PS
 
 #endif /* _RG_TARGET_CONFIG_H_ */
