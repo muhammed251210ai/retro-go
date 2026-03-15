@@ -1,51 +1,40 @@
 # **************************************************************************
-# * Kynex Sovereign - Pure Modular Build CI v267.1
+# * Kynex Sovereign - Full Modular Build CI v270.0
 # * Geliştirici: Muhammed (Kynex)
-# * Güncelleme: Eksik dosya hatalarını önler ve log ekler
+# * Görev: Tüm bin dosyalarını (Boot, Launcher, Cores) üretir ve paketler.
 # **************************************************************************
 
-name: Sovereign Modular Build v267.1
+name: Sovereign Full Modular Build v270.0
 
 on: [push]
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Node.js 24’e geçiş için önerilen ayar
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  build-modular:
+  build-sovereign-all:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodu Çek
+      - name: Kodu Cek
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+          fetch-depth: 0
 
-      - name: Sovereign Modular Derleme (Docker)
+      - name: Sovereign Fabrikasini Calistir (Docker)
         run: |
-          echo "🚀 Docker imajını oluşturuyoruz..."
-          docker build -t retro-go-builder .
+          # Docker imajını oluştur (Dockerfile'ı kullanır)
+          docker build -t sovereign-factory .
           
-          echo "🐳 Docker konteynerini çalıştırıyoruz..."
-          docker run --name modular-container retro-go-builder /bin/true
-          
-          echo "📂 release_bins klasörünü oluşturuyoruz..."
-          mkdir -p release_bins/apps
-          
-          echo "📤 Bin dosyalarını konteynerden kopyalıyoruz..."
-          for app in launcher retro-core prboom-go gwenesis fmsx; do
-              if docker exec modular-container test -f "/kynex_out/$app.bin"; then
-                  docker cp modular-container:/kynex_out/$app.bin ./release_bins/apps/
-                  echo "✅ $app.bin başarıyla kopyalandı."
-              else
-                  echo "⚠️ Uyarı: $app.bin bulunamadı!"
-              fi
-          done
-          
-          echo "🗑 Docker konteynerini temizliyoruz..."
-          docker rm modular-container
+          # Konteynırdan çıktıları al
+          docker run --name sovereign-container sovereign-factory /bin/true
+          mkdir -p final_pack
+          docker cp sovereign-container:/kynex_out/. ./final_pack/
+          docker rm sovereign-container
 
-      - name: Modüler Paketi Yükle
+      - name: Full Sovereign Paketini Yukle (Flash Ready)
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign_Modular_v267
-          path: release_bins/apps/
+          name: Kynex_Sovereign_Full_Pack_v270
+          path: final_pack/
+          compression-level: 9
