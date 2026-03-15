@@ -1,10 +1,11 @@
 # **************************************************************************
-# * Kynex Sovereign - USB Enabled CI v217.0
+# * Kynex Sovereign - Launcher Only Build CI v245.0
 # * Geliştirici: Muhammed (Kynex)
+# * Görev: Sadece Retro-Go Launcher'ı (launcher.bin) derler, diğerlerini atlar.
 # * Talimat: Asla satır silmeden, tam ve tek parça kod blokları içinde ver.
 # **************************************************************************
 
-name: RetroGo_Sovereign_Full_CI
+name: Sovereign Launcher Only Build v245.0
 
 on: [push]
 
@@ -12,29 +13,27 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  build-retro-go:
+  build-launcher:
     runs-on: ubuntu-latest
     steps:
-      - name: Kodlari Cek
+      - name: Kodu Cek
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
           fetch-depth: 0
 
-      - name: Docker ile S3 Launcher Uret
+      - name: Sadece Retro-Go Derleme (Launcher - Docker)
         run: |
+          # MUHAMMED: KynexOs ve FFat zaten saglam! Sadece Retro-Go'yu (Launcher) derliyoruz.
           docker build -t retro-go-builder .
           docker run --name temp-container retro-go-builder /bin/true
-          docker cp temp-container:/kynex_out/launcher.bin ./launcher.bin
-          docker cp temp-container:/kynex_out/bootloader.bin ./bootloader.bin
-          docker cp temp-container:/kynex_out/partition-table.bin ./partitions.bin
+          mkdir -p release_bins
+          docker cp temp-container:/kynex_out/launcher.bin ./release_bins/launcher.bin
           docker rm temp-container
 
-      - name: Kynex Paketini Yukle
+      - name: Sovereign Hizli Paket Yukle
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_USB_Package
-          path: |
-            launcher.bin
-            bootloader.bin
-            partitions.bin
+          name: Sovereign_Launcher_Only_v245
+          path: release_bins/launcher.bin
+          compression-level: 9
