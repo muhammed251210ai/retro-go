@@ -1,7 +1,7 @@
 # **************************************************************************
-# * Kynex Sovereign - Surgical Strike Dockerfile v286.0
+# * Kynex Sovereign - Lynx Protector Dockerfile v287.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Emülatör kodlarının içine sızıp çakışan isimleri temizler.
+# * Görev: Handy (Lynx) emülatöründeki PS çakışmasını kökten çözer.
 # **************************************************************************
 FROM espressif/idf:release-v4.4
 
@@ -15,14 +15,16 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# MUHAMMED: CERRAHİ MÜDAHALE BAŞLIYOR!
-# ESP-IDF makrolarını bozmadan, sorunlu emülatörlerin isimlerini değiştiriyoruz.
+# MUHAMMED: DERİN CERRAHİ!
+# SNES çakışmaları zaten çözülmüştü, şimdi Handy (Lynx) içindeki PS çakışmasını çözüyoruz!
 RUN find components/snes9x -type f -exec sed -i 's/\bBIT8\b/SNES_BIT8/g; s/\bBIT16\b/SNES_BIT16/g' {} + || true && \
     find components/handy -type f -exec sed -i 's/\bINTSET\b/HANDY_INTSET/g' {} + || true && \
+    find components/handy -type f -exec sed -i 's/\bPS\b/HANDY_PS/g' {} + || true && \
+    find components/handy -type f -exec sed -i 's/\bmPS\b/mHANDY_PS/g' {} + || true && \
     sed -i 's/#define BIT(n,r)/#undef BIT\n#define BIT(n,r)/g' components/gnuboy/cpu.c || true && \
     sed -i 's/#define BIT(cycles,/#undef BIT\n#define BIT(cycles,/g' components/nofrendo/nes/cpu.c || true
 
-# Derleme Aşaması (Truva Atı log koruması hala devrede, çökerse logları kurtarır)
+# Derleme Aşaması (Truva Atı modunda, çökerse logları verir)
 RUN mkdir -p /kynex_out && \
     . /opt/esp/idf/export.sh && \
     rm -rf build sdkconfig sdkconfig.old && \
