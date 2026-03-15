@@ -1,12 +1,9 @@
-# **************************************************************************
-# * Kynex Sovereign - Absolute Builder Dockerfile v278.0
-# **************************************************************************
 FROM espressif/idf:release-v4.4
 
 WORKDIR /app
 SHELL ["/bin/bash", "-c"]
 
-# Git ve Bagimliliklar
+# Sistem ve Bagimliliklar
 RUN git config --global --add safe.directory '*' && \
     apt-get update && apt-get install -y python3-pip git curl && \
     python3 -m pip install --upgrade pip && \
@@ -14,8 +11,9 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# MUHAMMED: Derleme komutu. Ciktiyi tam gormek icin verbose (v) ekledim.
+# MUHAMMED: Eski build kalintilarini siliyoruz ki tertemiz baslasin.
 RUN . /opt/esp/idf/export.sh && \
+    rm -rf build sdkconfig sdkconfig.old && \
     python3 rg_tool.py --target=esp32-s3-devkit release
 
 # Ciktilari Topla
