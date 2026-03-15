@@ -1,5 +1,7 @@
-/* * RetroGo Configuration - Kynex Sovereign The Extractor (v292.0)
+/* * RetroGo Configuration - Kynex Sovereign Final Solution (v296.0)
  * Geliştirici: Muhammed (Kynex)
+ * Özellikler: Fixed SD Path, I2S Audio, Dual Joystick, No Conflicts
+ * Donanım: ESP32-S3 N16R8
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -13,14 +15,14 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V292"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V296"
 
-// STORAGE - MUHAMMED: Dahili hafızayı SD Kart yapıyoruz!
+// STORAGE - MUHAMMED: Dahili hafızayı SD Kart gibi gösteriyoruz!
 #define RG_STORAGE_DRIVER           2              
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "ffat"         
 
-// AUDIO
+// AUDIO (Pin: 18, 8, 3)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
@@ -81,11 +83,5 @@ static inline void kynex_boot_switch_task(void *arg) {
     }
 }
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
-
-#undef PS
-#undef BIT
-#undef BIT8
-#undef BIT16
-#undef INTSET
 
 #endif
