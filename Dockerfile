@@ -2,7 +2,36 @@
 # * Kynex Sovereign - The Harvest Dockerfile v289.0
 # * Geliştirici: Muhammed (Kynex)
 # * Görev: Üretilen tüm BIN dosyalarını kendi klasörlerinden nokta atışı toplar!
+# **************************************************************# **************************************************************************
+# * Kynex Sovereign - Grand Map Dockerfile v290.0
 # **************************************************************************
+FROM espressif/idf:release-v4.4
+WORKDIR /app
+SHELL ["/bin/bash", "-c"]
+
+RUN git config --global --add safe.directory '*' && \
+    apt-get update && apt-get install -y python3-pip git curl && \
+    python3 -m pip install --upgrade pip pillow click pyserial cryptography
+
+COPY . .
+
+# MUHAMMED: CERRAHİ MÜDAHALE (Önceki zafer taktiğimiz)
+RUN find retro-core/components/snes9x -type f -exec sed -i 's/\bBIT8\b/SNES_BIT8/g; s/\bBIT16\b/SNES_BIT16/g' {} + || true
+RUN find retro-core/components/handy -type f -exec sed -i 's/\bINTSET\b/HANDY_INTSET/g' {} + || true
+RUN find retro-core/components/handy -type f -exec sed -i 's/\bPS\b/HANDY_PS/g' {} + || true
+RUN find retro-core/components/handy -type f -exec sed -i 's/\bmPS\b/mHANDY_PS/g' {} + || true
+
+# MUHAMMED: Yeni Partition Table'ı sisteme tanıtıyoruz!
+RUN . /opt/esp/idf/export.sh && \
+    python3 rg_tool.py --target=esp32-s3-devkit --partition-table=partitions.csv release > build_log.txt 2>&1 || true
+
+RUN mkdir -p /kynex_out && \
+    cp launcher/build/bootloader/bootloader.bin /kynex_out/bootloader.bin || true && \
+    cp launcher/build/partition_table/partition-table.bin /kynex_out/partition-table.bin || true && \
+    cp launcher/build/launcher.bin /kynex_out/launcher.bin || true && \
+    cp retro-core/build/retro-core.bin /kynex_out/retro-core.bin || true && \
+    cp prboom-go/build/prboom-go.bin /kynex_out/prboom-go.bin || true && \
+    cp *.img /kynex_out/ || true************
 FROM espressif/idf:release-v4.4
 
 WORKDIR /app
