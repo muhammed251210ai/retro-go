@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Ultimate Stabilizer (v242.0)
+/* * RetroGo Configuration - Kynex Sovereign Display Liberator (v243.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Ghost Input Assassin, HW BOOT Anchor, PSRAM Conflict Fix
+ * Özellikler: SPI Pin Conflict Fixed, Ultimate Stability, HW BOOT Anchor
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V242"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V243"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -29,19 +29,20 @@
 #define RG_AUDIO_USE_PWM            1   
 #define RG_GPIO_SND_PWM             GPIO_NUM_18 
 
-// VIDEO (Mutlak Yatay Konfigürasyon ve Hayalet Pin)
+// VIDEO (MUHAMMED: İŞTE ÇÖZÜM! Ekran Pinleri Flash Hafızadan Kurtarıldı!)
+// Eski Pinler (9,10,11,12) S3'ün dahili hafızasına aitti. Şimdi güvenli bölgeye (35-38) alındılar.
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
-#define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
+#define RG_SCREEN_SPEED             SPI_MASTER_FREQ_40M 
 #define RG_SCREEN_WIDTH             320
 #define RG_SCREEN_HEIGHT            240
-#define RG_SCREEN_ROTATE            1   // 90 Derece Yatay Kilit
-#define RG_GPIO_LCD_MISO            GPIO_NUM_13
-#define RG_GPIO_LCD_MOSI            GPIO_NUM_11
-#define RG_GPIO_LCD_CLK             GPIO_NUM_12
-#define RG_GPIO_LCD_CS              GPIO_NUM_10
-#define RG_GPIO_LCD_DC              GPIO_NUM_9
-#define RG_GPIO_LCD_RST             GPIO_NUM_14
+#define RG_SCREEN_ROTATE            1   
+#define RG_GPIO_LCD_MISO            GPIO_NUM_39 
+#define RG_GPIO_LCD_MOSI            GPIO_NUM_35 
+#define RG_GPIO_LCD_CLK             GPIO_NUM_36 
+#define RG_GPIO_LCD_CS              GPIO_NUM_37 
+#define RG_GPIO_LCD_DC              GPIO_NUM_38 
+#define RG_GPIO_LCD_RST             GPIO_NUM_14 
 // Çökmeyi engelleyen Hayalet Arka Işık Pini
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_47  
 
@@ -51,9 +52,7 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// MUHAMMED: HAYALET DOKUNUŞLARI ÖLDÜREN KOD! (ADC İptali)
-// Eğer fiziksel bir analog joystik bağlamadıysan boşta kalan pinler sürekli YUKARI basar.
-// Değerleri imkansız olan 5000-6000 sınırına çekerek bu sorunu kökünden çözdük.
+// ANALOG JOYSTICK (Genişletilmiş Ölü Bölge Kalkanı)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
@@ -65,9 +64,7 @@
     {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 5000, 6000}, \
 }
 
-// FİZİKSEL BUTONLAR
-// MUHAMMED: GPIO_21'deki çakışma yok edildi! Menü artık kartın üstündeki fiziksel BOOT (GPIO_0) tuşunda.
-// Diğer oynamak istediğin yön ve aksiyon tuşlarını sorunsuz pinlere bağlayabilirsin.
+// FİZİKSEL BUTONLAR (Kısa basım için GPIO_0 Menu tuşu oldu)
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
@@ -81,7 +78,6 @@
 }
 
 // KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ (Sistem geçişi BOOT - GPIO 0 tuşunda)
-// Kartın üzerindeki BOOT tuşuna kısa basarsan MENÜ açılır, 2 Saniye basılı tutarsan KynexOs'a geçer.
 static inline void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
     gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
