@@ -1,4 +1,4 @@
-name: Sovereign Juggernaut Build v293.0
+name: Sovereign Masterpiece Build v294.0
 on: [push]
 jobs:
   build-sovereign:
@@ -9,16 +9,15 @@ jobs:
         with:
           submodules: 'recursive'
           fetch-depth: 0
-      - name: Juggernaut Fabrikasini Calistir
+      - name: Masterpiece Fabrikasini Calistir
         run: |
-          docker build -t factory .
-          # Konteynırdan dosyaları kopyalamak için geçici bir isim veriyoruz
-          docker create --name kynex_container factory
+          docker build -t masterpiece_factory .
+          docker create --name kynex_final masterpiece_factory
           mkdir -p output
-          docker cp kynex_container:/kynex_out/. ./output/
-          docker rm kynex_container
-      - name: Paketi Yukle
+          docker cp kynex_final:/kynex_out/. ./output/
+          docker rm kynex_final
+      - name: Kynex Sovereign Paketi (Full IMG Dahil)
         uses: actions/upload-artifact@v4
         with:
-          name: Kynex_Sovereign_V293_Final
+          name: Kynex_Sovereign_V294_FINAL
           path: output/
