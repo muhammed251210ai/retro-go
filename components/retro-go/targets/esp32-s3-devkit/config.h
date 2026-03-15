@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Ultimate Audio (v251.0)
+/* * RetroGo Configuration - Kynex Sovereign Iron Button (v252.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: I2S Audio Fix (MAX98357A), All Gamepad Pins Restored, Stable UI
+ * Özellikler: Ghost Button Press Fixed, I2S Audio Active
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,7 +16,7 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V251"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V252"
 
 // STORAGE (Dahili Hafıza Mühürlendi)
 #define RG_STORAGE_DRIVER           2   
@@ -27,9 +27,7 @@
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_USE_PWM            0   
-// MUHAMMED: Derleyici hatasını önlemek için PWM pinini -1 (YOK) yaptık:
 #define RG_GPIO_SND_PWM             -1  
-// I2S Dijital Pinleri:
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
@@ -47,7 +45,6 @@
 #define RG_GPIO_LCD_CS              GPIO_NUM_10
 #define RG_GPIO_LCD_DC              GPIO_NUM_9
 #define RG_GPIO_LCD_RST             GPIO_NUM_14
-// Çökmeyi engelleyen Hayalet Arka Işık Pini
 #define RG_GPIO_LCD_BCKL            GPIO_NUM_47  
 
 // EKRAN DÜZELTMESİ (ILI9341)
@@ -56,7 +53,7 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (Şimdilik Kapalı - 5000 Eşiği)
+// ANALOG JOYSTICK (HAYALET DOKUNUŞLARI ÖLDÜREN KOD)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 5000, 6000}, \
@@ -68,16 +65,13 @@
     {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_2, ADC_ATTEN_DB_11, 5000, 6000}, \
 }
 
-// FİZİKSEL BUTONLAR (Hem Menü hem de Oyun oynamak için Yön/Aksiyon tuşları)
+// FİZİKSEL BUTONLAR 
+// MUHAMMED: Kilitlenmeyi çözmek için şimdilik SADECE YUKARI, AŞAĞI ve A (Seç) tuşunu bıraktım.
+// Bu üç pinden (4, 5, 16) cihaza hiçbir kablo TAKMA! Cihazı boşta aç, menü kilitlenmeyecek.
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_UP,     .num = GPIO_NUM_4,  .pullup = 1, .level = 0}, \
     {RG_KEY_DOWN,   .num = GPIO_NUM_5,  .pullup = 1, .level = 0}, \
-    {RG_KEY_LEFT,   .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
-    {RG_KEY_RIGHT,  .num = GPIO_NUM_7,  .pullup = 1, .level = 0}, \
-    {RG_KEY_A,      .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
-    {RG_KEY_B,      .num = GPIO_NUM_16, .pullup = 1, .level = 0}, \
-    {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
-    {RG_KEY_SELECT, .num = GPIO_NUM_42, .pullup = 1, .level = 0}, \
+    {RG_KEY_A,      .num = GPIO_NUM_16, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
