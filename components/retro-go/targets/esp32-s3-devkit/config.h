@@ -1,7 +1,5 @@
-/* * RetroGo Configuration - Kynex Sovereign Final Solution (v296.0)
+/* * RetroGo Configuration - Kynex Sovereign Hard Mounter (v297.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Fixed SD Path, I2S Audio, Dual Joystick, No Conflicts
- * Donanım: ESP32-S3 N16R8
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -15,14 +13,14 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V296"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V297"
 
-// STORAGE - MUHAMMED: Dahili hafızayı SD Kart gibi gösteriyoruz!
+// STORAGE - MUHAMMED: Dahili hafızayı SD Kart yapıyoruz!
 #define RG_STORAGE_DRIVER           2              
 #define RG_STORAGE_ROOT             "/sd"          
-#define RG_STORAGE_FLASH_PARTITION  "ffat"         
+#define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO (Pin: 18, 8, 3)
+// AUDIO
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
@@ -75,8 +73,8 @@ static inline void kynex_boot_switch_task(void *arg) {
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
             kynex_timer++;
             if(kynex_timer > 20) { 
-                const esp_partition_t* kynex_p = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                if(kynex_p) { esp_ota_set_boot_partition(kynex_p); esp_restart(); }
+                const esp_partition_t* k_p = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+                if(k_p) { esp_ota_set_boot_partition(k_p); esp_restart(); }
             }
         } else { kynex_timer = 0; }
         vTaskDelay(pdMS_TO_TICKS(100)); 
