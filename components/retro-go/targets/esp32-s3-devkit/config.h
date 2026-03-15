@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Pathfinder (v261.0)
+/* * RetroGo Configuration - Kynex Sovereign The Singularity (v265.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: I2S Audio Fix (MAX98357A), Absolute /sd Pathing, Dual Joystick
+ * Özellikler: All-in-One Core Integration, Forced I2S Audio, Dual Joy Axis Fix
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,23 +16,22 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V261"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V265"
 
-// STORAGE (Launcher ve WebUI artık tek bir dilde konuşuyor)
+// STORAGE (WebUI Hatalarını Bitiren Standart)
 #define RG_STORAGE_DRIVER           2   
 #define RG_STORAGE_ROOT             "/sd"    
 #define RG_STORAGE_FLASH_PARTITION  "ffat"   
 
-// AUDIO (MUHAMMED: MAX98357A I2S MODULU TEKRAR AKTİF)
+// AUDIO (MUHAMMED: DUMMY SES MODUNU ÖLDÜRDÜK - ZORUNLU I2S)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_USE_PWM            0   
-#define RG_GPIO_SND_PWM             -1  
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
 
-// VIDEO (Orijinal Pinlerin - Dokunmatik CS 16 dahil)
+// VIDEO (Senin Orijinal Pin Haritan)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -53,7 +52,7 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (90 Derece Sola Çevrili ve Kutuplar Ayarlı)
+// ANALOG JOYSTICK (90 Derece ve Ters Kutuplar İyileştirildi)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -65,14 +64,14 @@
     {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
 }
 
-// FİZİKSEL BUTONLAR (Select:6, Start:17, Menu:0)
+// FİZİKSEL BUTONLAR (Select:6, Start:17, Menu/Boot:0)
 #define RG_GAMEPAD_GPIO_MAP {\
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// KYNEX-OS GEÇİŞ GÖREVİ
+// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
 static inline void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
     gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
@@ -82,7 +81,7 @@ static inline void kynex_os_switch_task(void *arg) {
             kynex_timer++;
             if(kynex_timer > 20) { 
                 const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                if(kynex_part) { esp_ota_set_boot_partition(kynex_part); esp_ota_set_boot_partition(kynex_part); esp_restart(); }
+                if(kynex_part) { esp_ota_set_boot_partition(kynex_part); esp_restart(); }
             }
         } else { kynex_timer = 0; }
         vTaskDelay(pdMS_TO_TICKS(100)); 
