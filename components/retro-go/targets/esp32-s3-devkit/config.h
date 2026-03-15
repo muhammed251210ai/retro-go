@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign The Monolith (v266.0)
+/* * RetroGo Configuration - Kynex Sovereign Modular Return (v267.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Integrated Internal Cores, Forced I2S, Dual Axis Rotation Fix
+ * Özellikler: Modular External Cores, Forced I2S, Dual Axis Rotation Fix
  * Donanım: ESP32-S3 N16R8
  * Talimat: Asla satır silmeden, tam ve tek parça kod.
  */
@@ -16,14 +16,14 @@
 #include "esp_system.h"
 
 // Target definition
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V266"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-DUALBOOT-V267"
 
-// STORAGE (Launcher ve Cores artık bu yolu ortak kullanıyor)
+// STORAGE (Launcher harici dosyaları bu yoldan arayacak)
 #define RG_STORAGE_DRIVER           2   
 #define RG_STORAGE_ROOT             "/sd"    
 #define RG_STORAGE_FLASH_PARTITION  "ffat"   
 
-// AUDIO (MAX98357A I2S MODULU - MONOLITIK BAGLANTI)
+// AUDIO (MAX98357A I2S MODULU - TAM GÜÇ)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_USE_PWM            0   
@@ -31,7 +31,7 @@
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
 
-// VIDEO (Orijinal Kynex Pin Haritası)
+// VIDEO (Senin Orijinal Kynex Pin Haritası)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -52,7 +52,7 @@
     ILI9341_CMD(0xB1, 0x00, 0x1B);                                                                              \
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27);
 
-// ANALOG JOYSTICK (Tam Tur Döndürülmüş ve Kutuplanmış Eksenler)
+// ANALOG JOYSTICK (90 Derece Sola Çevrili ve Kutuplar Ayarlı)
 #define RG_GAMEPAD_ADC_MAP {\
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
