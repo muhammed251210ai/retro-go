@@ -1,7 +1,7 @@
 # **************************************************************************
-# * Kynex Sovereign - Log Revealer Dockerfile v283.0
+# * Kynex Sovereign - Trojan Horse Dockerfile v284.0
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Derleme çökerse hatanın son 200 satırını ekrana ifşa eder!
+# * Görev: Docker'ın çökmesini engeller, gizli hataları zip içine kaçırır!
 # **************************************************************************
 FROM espressif/idf:release-v4.4
 
@@ -16,14 +16,15 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# MUHAMMED: İŞTE SİHİR BURADA! Hata olursa log.txt dosyasının son 200 satırını ekrana basıp öyle kapanacak.
-RUN . /opt/esp/idf/export.sh && \
-    rm -rf build sdkconfig sdkconfig.old && \
-    (python3 rg_tool.py --target=esp32-s3-devkit release > build_log.txt 2>&1 || (echo -e "\n\n==========================================\n=== KYNEX DERLEME HATASI DETAYLARI ===\n==========================================" && tail -n 200 build_log.txt && exit 1))
-
-# Çıktıları Topla (Başarılı olanları alır)
+# MUHAMMED: İŞTE SİHİR BURADA! '|| true' sayesinde sistem hata verse bile çökmeyecek.
+# Tüm derleme çıktıları 'build_log.txt' dosyasına kaydedilecek.
 RUN mkdir -p /kynex_out && \
-    cp build/bootloader/bootloader.bin /kynex_out/bootloader.bin || true && \
+    . /opt/esp/idf/export.sh && \
+    rm -rf build sdkconfig sdkconfig.old && \
+    (python3 rg_tool.py --target=esp32-s3-devkit release > /kynex_out/build_log.txt 2>&1 || true)
+
+# Çıktıları Topla (Başarılı olan bin dosyalarını ve LOG dosyasını alır)
+RUN cp build/bootloader/bootloader.bin /kynex_out/bootloader.bin || true && \
     cp build/partition_table/partition-table.bin /kynex_out/partition-table.bin || true && \
     cp build/launcher.bin /kynex_out/launcher.bin || true && \
     find build -name "*.bin" ! -path "*/bootloader/*" ! -path "*/partition_table/*" -exec cp {} /kynex_out/ \; || true
