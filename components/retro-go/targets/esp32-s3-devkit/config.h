@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Deep Core (v298.0)
+/* * RetroGo Configuration - Kynex Sovereign Engine (v299.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Fixed SD Path, I2S Audio, Dual Joystick, Emulator Shield Active
+ * Özellikler: Absolute Clean Syntax, Internal SD Fix, I2S Audio
  * Donanım: ESP32-S3 N16R8
  */
 
@@ -15,22 +15,21 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V298"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V299"
 
-// STORAGE - MUHAMMED: Dahili hafızayı SD Kart yapıyoruz!
-#define RG_STORAGE_DRIVER           2              // 2 = Dahili Flash (FFAT)
-#define RG_STORAGE_ROOT             "/sd"          // Yazılım burayı ana dizin sanacak
-#define RG_STORAGE_FLASH_PARTITION  "storage"      // partitions.csv ile eşleşen isim
+// STORAGE - MUHAMMED: SD Kart Hatasını Bitiren Ayarlar!
+#define RG_STORAGE_DRIVER           2              
+#define RG_STORAGE_ROOT             "/sd"          
+#define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO (MAX98357A I2S MODULU)
+// AUDIO (Pin: 18, 8, 3)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
-#define RG_AUDIO_USE_PWM            0   
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
 
-// VIDEO (ILI9341 SPI)
+// VIDEO
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -51,7 +50,7 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK (ADC Haritası)
+// ANALOG JOYSTICK (Sondaki boşluklar temizlendi!)
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -69,29 +68,20 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
 static inline void kynex_boot_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
-    int kynex_timer = 0;
+    int k_timer = 0;
     while(1) {
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
-            kynex_timer++;
-            if(kynex_timer > 20) { 
-                const esp_partition_t* k_p = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                if(k_p) { esp_ota_set_boot_partition(k_p); esp_restart(); }
+            k_timer++;
+            if(k_timer > 20) { 
+                const esp_partition_t* p = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+                if(p) { esp_ota_set_boot_partition(p); esp_restart(); }
             }
-        } else { kynex_timer = 0; }
+        } else { k_timer = 0; }
         vTaskDelay(pdMS_TO_TICKS(100)); 
     }
 }
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
-// MUHAMMED: EMÜLATÖR KALKANI! (SD HATASINI VE DERLEME HATASINI BİTİREN KISIM)
-// ESP-IDF'nin sistem makrolarının emülatörlerle çakışmasını engeller.
-#undef PS
-#undef BIT
-#undef BIT8
-#undef BIT16
-#undef INTSET
-
-#endif /* _RG_TARGET_CONFIG_H_ */
+#endif
