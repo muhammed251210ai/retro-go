@@ -1,5 +1,7 @@
-/* * RetroGo Configuration - Kynex Sovereign Hard Mounter (v297.0)
+/* * RetroGo Configuration - Kynex Sovereign Deep Core (v298.0)
  * Geliştirici: Muhammed (Kynex)
+ * Özellikler: Fixed SD Path, I2S Audio, Dual Joystick, Emulator Shield Active
+ * Donanım: ESP32-S3 N16R8
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -13,21 +15,22 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V297"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V298"
 
 // STORAGE - MUHAMMED: Dahili hafızayı SD Kart yapıyoruz!
-#define RG_STORAGE_DRIVER           2              
-#define RG_STORAGE_ROOT             "/sd"          
-#define RG_STORAGE_FLASH_PARTITION  "storage"      
+#define RG_STORAGE_DRIVER           2              // 2 = Dahili Flash (FFAT)
+#define RG_STORAGE_ROOT             "/sd"          // Yazılım burayı ana dizin sanacak
+#define RG_STORAGE_FLASH_PARTITION  "storage"      // partitions.csv ile eşleşen isim
 
-// AUDIO
+// AUDIO (MAX98357A I2S MODULU)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
+#define RG_AUDIO_USE_PWM            0   
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
 
-// VIDEO
+// VIDEO (ILI9341 SPI)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -48,7 +51,7 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK
+// ANALOG JOYSTICK (ADC Haritası)
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -66,6 +69,7 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
+// KYNEX-OS (OTA_0) GEÇİŞ GÖREVİ
 static inline void kynex_boot_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
     int kynex_timer = 0;
@@ -82,4 +86,12 @@ static inline void kynex_boot_switch_task(void *arg) {
 }
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
-#endif
+// MUHAMMED: EMÜLATÖR KALKANI! (SD HATASINI VE DERLEME HATASINI BİTİREN KISIM)
+// ESP-IDF'nin sistem makrolarının emülatörlerle çakışmasını engeller.
+#undef PS
+#undef BIT
+#undef BIT8
+#undef BIT16
+#undef INTSET
+
+#endif /* _RG_TARGET_CONFIG_H_ */
