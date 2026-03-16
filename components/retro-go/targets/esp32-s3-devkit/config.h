@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Navigator's Will (v316.0)
+/* * RetroGo Configuration - Kynex Sovereign Clockwise Edition (v318.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Fixed Left Analog 90° Shift, Right Analog Y-Inversion, I2S Audio Fix
+ * Özellikler: Dual Analog 90° Right Rotation Sync, MAX98357A I2S Audio Fix
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -15,14 +15,14 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V316"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V318"
 
 // STORAGE
 #define RG_STORAGE_DRIVER           2              
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO (MAX98357A I2S)
+// AUDIO - MUHAMMED: MAX98357A I2S Modülü İçin Tam Güç
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_DRIVER             1               
@@ -54,18 +54,17 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - MUHAMMED: SOL 90° KAYDIRILDI, SAĞ Y-EKSENİ TERSLENDİ
-// Sol Stick: Fiziksel Sağ->UP, Fiziksel Sol->DOWN, Fiziksel Aşağı->RIGHT, Fiziksel Yukarı->LEFT
-// Sağ Stick: Y-A Ekseni (Yukarı/Aşağı) Birbiriyle Takas Edildi.
+// ANALOG JOYSTICK - MUHAMMED: 90 DERECE SAĞA (CLOCKWISE) DÖNDÜRÜLMÜŞ KONTROLLER
+// Mantık: Fiziksel Yukarı->Eski Sol | Fiziksel Aşağı->Eski Sağ | Fiziksel Sol->Eski Yukarı | Fiziksel Sağ->Eski Aşağı
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    /* Fiziksel Sağ -> YUKARI */ \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, /* Fiziksel Sol -> AŞAĞI */ \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    /* Fiziksel Yukarı -> SOL */ \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, /* Fiziksel Aşağı -> SAĞ */ \
-    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, /* SAĞ STICK: YUKARI (Terslendi) */ \
-    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    /* SAĞ STICK: AŞAĞI (Terslendi) */ \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, /* SAĞ STICK: SOL (Orijinal) */ \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000}     /* SAĞ STICK: SAĞ (Orijinal) */ \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, /* Yeni Yukarı (Eski Sol) */ \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    /* Yeni Aşağı (Eski Sağ) */ \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    /* Yeni Sol (Eski Yukarı) */ \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, /* Yeni Sağ (Eski Aşağı) */ \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, /* Sağ Stick Yeni Yukarı (Eski X/Sol) */ \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    /* Sağ Stick Yeni Aşağı (Eski B/Sağ) */ \
+    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    /* Sağ Stick Yeni Sol (Eski Y/Yukarı) */ \
+    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}  /* Sağ Stick Yeni Sağ (Eski A/Aşağı) */ \
 }
 
 #define RG_GAMEPAD_GPIO_MAP { \
@@ -89,5 +88,11 @@ static inline void kynex_boot_switch_task(void *arg) {
     }
 }
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
+
+#undef PS
+#undef BIT
+#undef BIT8
+#undef BIT16
+#undef INTSET
 
 #endif /* _RG_TARGET_CONFIG_H_ */
