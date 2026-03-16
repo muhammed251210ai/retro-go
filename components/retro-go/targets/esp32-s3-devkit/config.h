@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Vertical Masterpiece (v320.0)
+/* * RetroGo Configuration - Kynex Sovereign Inverted Edition (v321.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Fixed Compilation Error, 90° Clockwise Logic, MAX98357A I2S
+ * Özellikler: 180 Degree Full Rotation Sync, MAX98357A I2S Audio Fix
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -15,7 +15,7 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V320"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V321"
 
 // STORAGE
 #define RG_STORAGE_DRIVER           2              
@@ -54,17 +54,17 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - MUHAMMED: DİKEY TUTUŞ (90° SAĞA) İÇİN TAM SENKRONİZASYON
-// Mantık: Fiziksel Sol -> Ekran YUKARI | Fiziksel Sağ -> Ekran AŞAĞI | Fiziksel Aşağı -> Ekran SOL | Fiziksel Üst -> Ekran SAĞ
+// ANALOG JOYSTICK - MUHAMMED: ORİJİNALİN 180 DERECE TERSİ
+// Her eksen (X ve Y) kendi içinde aynalandı.
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000}     \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000}     \
 }
 
 #define RG_GAMEPAD_GPIO_MAP { \
