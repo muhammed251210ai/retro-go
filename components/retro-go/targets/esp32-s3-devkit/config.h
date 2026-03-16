@@ -1,6 +1,7 @@
-/* * RetroGo Configuration - Kynex Sovereign Conquest (v300.0)
+/* * RetroGo Configuration - Kynex Sovereign Iron Edition (v301.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Auto-Format Internal Storage, I2S Active, SD Detection Disabled
+ * Özellikler: Fixed SD Path, I2S Audio Active, Emulator Shields Active
+ * Not: Asla satır silmeden, tam ve tek parça kod.
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -14,25 +15,22 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V300"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V301"
 
-// STORAGE - MUHAMMED: İŞTE SİHİRLİ DEĞNEK BURADA!
-#define RG_STORAGE_DRIVER           2              // Dahili Flash Sürücüsü
-#define RG_STORAGE_ROOT             "/sd"          // Sanal klasör adı
-#define RG_STORAGE_FLASH_PARTITION  "storage"      // CSV'deki isimle aynı
-#define RG_STORAGE_FLASH_FORMAT_IF_MOUNT_FAILS 1   // Mount edemezsen ZORLA FORMATLA!
+// STORAGE - MUHAMMED: Dahili hafızayı SD Kart yapıyoruz!
+#define RG_STORAGE_DRIVER           2              
+#define RG_STORAGE_ROOT             "/sd"          
+#define RG_STORAGE_FLASH_PARTITION  "ffat"         
 
-// SD KART ALGILAMAYI İPTAL ET (Sistem kart var sansın)
-#define RG_GPIO_SDCARD_DET          -1             
-
-// AUDIO (Pin: 18, 8, 3)
+// AUDIO (MAX98357A I2S MODULU)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
+#define RG_AUDIO_USE_PWM            0   
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
 
-// VIDEO
+// VIDEO (ILI9341 SPI)
 #define RG_SCREEN_DRIVER            0   
 #define RG_SCREEN_HOST              SPI2_HOST
 #define RG_SCREEN_SPEED             SPI_MASTER_FREQ_20M 
@@ -53,7 +51,7 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK
+// ANALOG JOYSTICK (ADC Haritası)
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -71,26 +69,28 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
+// KYNEX-OS (OTA_0) GECIS GOREVI
 static inline void kynex_boot_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
-    int k_timer = 0;
+    int kynex_timer = 0;
     while(1) {
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
-            k_timer++;
-            if(k_timer > 20) { 
-                const esp_partition_t* p = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                if(p) { esp_ota_set_boot_partition(p); esp_restart(); }
+            kynex_timer++;
+            if(kynex_timer > 20) { 
+                const esp_partition_t* k_p = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+                if(k_p) { esp_ota_set_boot_partition(k_p); esp_restart(); }
             }
-        } else { k_timer = 0; }
+        } else { kynex_timer = 0; }
         vTaskDelay(pdMS_TO_TICKS(100)); 
     }
 }
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
+// MUHAMMED: EMULATOR KALKANI (Derleme hatalarini onler)
 #undef PS
 #undef BIT
 #undef BIT8
 #undef BIT16
 #undef INTSET
 
-#endif
+#endif /* _RG_TARGET_CONFIG_H_ */
