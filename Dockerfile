@@ -8,15 +8,12 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# EMÜLATÖR KALKANLARI
+# Emülatör kalkanları
 RUN find retro-core/components/snes9x -type f -exec sed -i '1i#undef BIT8\n#undef BIT16' {} + || true
 RUN find retro-core/components/handy -type f -exec sed -i '1i#undef PS\n#undef INTSET' {} + || true
 
-# MUHAMMED: İŞTE DARBE BURADA!
-# Retro-Go'nun orijinal partitions.csv dosyasını bizimkiyle değiştiriyoruz.
-RUN cp partitions.csv components/retro-go/targets/esp32-s3-devkit/partitions.csv && \
-    cp partitions.csv launcher/partitions.csv && \
-    cp partitions.csv retro-core/partitions.csv
+# MUHAMMED: Kesin çözüm - Haritayı sistemin orijinal klasörüne mühürle!
+RUN cp partitions.csv components/retro-go/targets/esp32-s3-devkit/partitions.csv
 
 # Derleme
 RUN . /opt/esp/idf/export.sh && \
