@@ -8,12 +8,12 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# Emülatör cerrahisi
+# Emülatör kalkanları
 RUN find retro-core/components/snes9x -type f -exec sed -i 's/\bBIT8\b/SNES_BIT8/g; s/\bBIT16\b/SNES_BIT16/g' {} + || true
 RUN find retro-core/components/handy -type f -exec sed -i 's/\bINTSET\b/HANDY_INTSET/g' {} + || true
 RUN find retro-core/components/handy -type f -exec sed -i 's/\bPS\b/HANDY_PS/g' {} + || true
 
-# MUHAMMED: 16MB Desteğini Hedef Klasöre Zorla Yazıyoruz
+# 16MB ve Partition Enjeksiyonu
 RUN mkdir -p components/retro-go/targets/esp32-s3-devkit/ && \
     cp partitions.csv components/retro-go/targets/esp32-s3-devkit/partitions.csv
 
