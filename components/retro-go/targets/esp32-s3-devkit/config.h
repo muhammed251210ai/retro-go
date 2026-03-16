@@ -1,7 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Architect Edition (v304.0)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Core (v305.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Fixed Trailing Backslash, SD Path Mapped, I2S Audio
- * Not: Asla satır silmeden, tam ve tek parça kod.
+ * Özellikler: No Undefs, Clean Syntax, SD Partition Mapped
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -15,14 +14,14 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V304"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V305"
 
-// STORAGE - MUHAMMED: Loglardaki hatayı bitiren eşleşme!
+// STORAGE - MUHAMMED: Dahili hafızayı SD Kart yapıyoruz!
 #define RG_STORAGE_DRIVER           2              
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO (Pin: 18, 8, 3)
+// AUDIO
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_USE_PWM            0   
@@ -51,7 +50,7 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK (Hatalı işaretler temizlendi, artık launcher derlenecek!)
+// ANALOG JOYSTICK
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -84,11 +83,5 @@ static inline void kynex_boot_switch_task(void *arg) {
     }
 }
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
-
-#undef PS
-#undef BIT
-#undef BIT8
-#undef BIT16
-#undef INTSET
 
 #endif /* _RG_TARGET_CONFIG_H_ */
