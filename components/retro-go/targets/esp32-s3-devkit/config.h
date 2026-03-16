@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Dual-System Bridge (v325.3)
+/* * RetroGo Configuration - Kynex Sovereign Hybrid Masterpiece (v325.4)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: GPIO 0 Hybrid Fix, Partition Error Report, Force Switch
+ * Özellikler: GPIO 0 Short -> Menu | GPIO 0 Long -> KynexOS | 180° Inverted Analog
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -14,9 +14,6 @@
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_system.h"
-
-// Retro-Go Video Driver'a erişim (Hata ekranı için)
-#include "rg_video.h" 
 
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V325"
 
@@ -72,43 +69,35 @@
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}  \
 }
 
+// GPIO 0 HEM MENÜ TUŞUDUR (KISA BASIŞ) HEM DE SİSTEM DEĞİŞTİRİCİ (UZUN BASIŞ)
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// SİSTEM GEÇİŞ GÖREVİ - MUHAMMED: ZORLAYICI VE DENETLEYİCİ MOD
-static inline void kynex_enforcer_switch_task(void *arg) {
-    int hold_timer = 0;
+// SİSTEM GEÇİŞ GÖREVİ - ARKA PLANDA ÇALIŞIR
+static inline void kynex_switch_task(void *arg) {
+    // Pin ayarlarını gamepad driver'ı bozmadan güvenli şekilde dinliyoruz
+    int counter = 0;
     while(1) {
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
-            hold_timer++;
-            // 3 saniye (60 * 50ms)
-            if(hold_timer > 60) { 
-                // ÖNCE: Haritada ota_0 (KynexOS) var mı kontrol et
+            counter++;
+            // Yaklaşık 3 saniye basılı tutulursa (60 * 50ms)
+            if(counter > 60) { 
                 const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                
                 if(target != NULL) { 
-                    // BULUNDU: Boot sektörünü güncelle ve yeniden başlat
                     esp_ota_set_boot_partition(target); 
                     esp_restart(); 
-                } else {
-                    // HATA: Bölüm bulunamadı! Ekranı mavi yap (BSOD stili)
-                    rg_video_draw_fill(0x001F); // Mavi ekran
-                    // Bu noktada ekrana yazı basmak için video sürücüsü meşgul olabilir
-                    // Cihazı kilitliyoruz ki Muhammed hatayı anlasın
-                    hold_timer = 0;
-                    while(gpio_get_level(GPIO_NUM_0) == 0) { vTaskDelay(10); } 
                 }
             }
         } else { 
-            hold_timer = 0; 
+            counter = 0; 
         }
         vTaskDelay(pdMS_TO_TICKS(50)); 
     }
 }
 
-#define RG_TARGET_INIT() xTaskCreate(kynex_enforcer_switch_task, "kynex_switch", 2048, NULL, 10, NULL);
+#define RG_TARGET_INIT() xTaskCreate(kynex_switch_task, "kynex_switch", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
