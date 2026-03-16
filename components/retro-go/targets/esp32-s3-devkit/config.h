@@ -1,7 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Engine (v299.0)
+/* * RetroGo Configuration - Kynex Sovereign Conquest (v300.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Absolute Clean Syntax, Internal SD Fix, I2S Audio
- * Donanım: ESP32-S3 N16R8
+ * Özellikler: Auto-Format Internal Storage, I2S Active, SD Detection Disabled
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -15,12 +14,16 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V299"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V300"
 
-// STORAGE - MUHAMMED: SD Kart Hatasını Bitiren Ayarlar!
-#define RG_STORAGE_DRIVER           2              
-#define RG_STORAGE_ROOT             "/sd"          
-#define RG_STORAGE_FLASH_PARTITION  "storage"      
+// STORAGE - MUHAMMED: İŞTE SİHİRLİ DEĞNEK BURADA!
+#define RG_STORAGE_DRIVER           2              // Dahili Flash Sürücüsü
+#define RG_STORAGE_ROOT             "/sd"          // Sanal klasör adı
+#define RG_STORAGE_FLASH_PARTITION  "storage"      // CSV'deki isimle aynı
+#define RG_STORAGE_FLASH_FORMAT_IF_MOUNT_FAILS 1   // Mount edemezsen ZORLA FORMATLA!
+
+// SD KART ALGILAMAYI İPTAL ET (Sistem kart var sansın)
+#define RG_GPIO_SDCARD_DET          -1             
 
 // AUDIO (Pin: 18, 8, 3)
 #define RG_AUDIO_USE_INT_DAC        0   
@@ -50,7 +53,7 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK (Sondaki boşluklar temizlendi!)
+// ANALOG JOYSTICK
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -83,5 +86,11 @@ static inline void kynex_boot_switch_task(void *arg) {
     }
 }
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
+
+#undef PS
+#undef BIT
+#undef BIT8
+#undef BIT16
+#undef INTSET
 
 #endif
