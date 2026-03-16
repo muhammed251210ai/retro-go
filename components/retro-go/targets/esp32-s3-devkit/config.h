@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Sonic Master (v308.0)
+/* * RetroGo Configuration - Kynex Sovereign Balanced Edition (v309.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: MAX98357A I2S Audio Fix, Dual Joystick Logic Sync
+ * Özellikler: Dual Analog Sync, MAX98357A Mono Fix, No Global Undefs
  * Donanım: ESP32-S3 N16R8 + MAX98357A
  */
 
@@ -15,22 +15,22 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V308"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V309"
 
 // STORAGE
 #define RG_STORAGE_DRIVER           2              
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO - MUHAMMED: MAX98357A İÇİN ÖZEL AYARLAR!
+// AUDIO - MUHAMMED: MAX98357A Mono Tasarımı
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
-#define RG_AUDIO_DRIVER             1               // 1 = I2S
-#define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18     // Modüldeki BCLK
-#define RG_GPIO_SND_I2S_WS          GPIO_NUM_8      // Modüldeki LRC
-#define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3      // Modüldeki DIN
-#define RG_AUDIO_I2S_MONO           1               // MAX98357A Mono bir amfidir
-#define RG_AUDIO_VOLUME_DEFAULT     100             // Başlangıç sesi tam güç
+#define RG_AUDIO_DRIVER             1               
+#define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18     
+#define RG_GPIO_SND_I2S_WS          GPIO_NUM_8      
+#define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3      
+#define RG_AUDIO_I2S_MONO           1               
+#define RG_AUDIO_VOLUME_DEFAULT     100             
 #define RG_AUDIO_I2S_PORT           I2S_NUM_0
 
 // VIDEO
@@ -55,7 +55,6 @@
 } while(0)
 
 // ANALOG JOYSTICK - MUHAMMED: SAĞ VE SOL MANTIK TAMAMEN EŞİTLENDİ
-// 0-1000 ve 3000-4096 aralıkları her iki stick için de "Mantıksal İkiz" yapıldı.
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -89,10 +88,4 @@ static inline void kynex_boot_switch_task(void *arg) {
 }
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
-#undef PS
-#undef BIT
-#undef BIT8
-#undef BIT16
-#undef INTSET
-
-#endif
+#endif /* _RG_TARGET_CONFIG_H_ */
