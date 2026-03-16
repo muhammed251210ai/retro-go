@@ -8,20 +8,17 @@ RUN git config --global --add safe.directory '*' && \
 
 COPY . .
 
-# MUHAMMED: EMÜLATÖR CERRAHİSİ
-RUN find retro-core/components/snes9x -type f -exec sed -i 's/\bBIT8\b/SNES_BIT8/g; s/\bBIT16\b/SNES_BIT16/g' {} + || true
-RUN find retro-core/components/handy -type f -exec sed -i 's/\bINTSET\b/HANDY_INTSET/g' {} + || true
-RUN find retro-core/components/handy -type f -exec sed -i 's/\bPS\b/HANDY_PS/g' {} + || true
+# EMÜLATÖR KALKANLARI
+RUN find retro-core/components/snes9x -type f -exec sed -i '1i#undef BIT8\n#undef BIT16' {} + || true
+RUN find retro-core/components/handy -type f -exec sed -i '1i#undef PS\n#undef INTSET' {} + || true
 
-# MUHAMMED: 16MB VE SD HARİTASI ENJEKSİYONU
-# Sistemin orijinal hedef ayarlarını 16MB'a zorluyoruz.
-RUN echo "CONFIG_PARTITION_TABLE_CUSTOM=y" >> components/retro-go/targets/esp32-s3-devkit/sdkconfig && \
-    echo "CONFIG_PARTITION_TABLE_FILENAME=\"partitions.csv\"" >> components/retro-go/targets/esp32-s3-devkit/sdkconfig && \
-    cp partitions.csv components/retro-go/targets/esp32-s3-devkit/partitions.csv && \
+# MUHAMMED: İŞTE DARBE BURADA!
+# Retro-Go'nun orijinal partitions.csv dosyasını bizimkiyle değiştiriyoruz.
+RUN cp partitions.csv components/retro-go/targets/esp32-s3-devkit/partitions.csv && \
     cp partitions.csv launcher/partitions.csv && \
     cp partitions.csv retro-core/partitions.csv
 
-# Derleme Aşaması
+# Derleme
 RUN . /opt/esp/idf/export.sh && \
     rm -rf build sdkconfig sdkconfig.old && \
     python3 rg_tool.py --target=esp32-s3-devkit release
