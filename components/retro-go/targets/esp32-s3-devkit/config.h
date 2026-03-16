@@ -1,4 +1,4 @@
-/* * RetroGo Configuration - Kynex Sovereign Dual-System Bridge (v325.0)
+/* * RetroGo Configuration - Kynex Sovereign Dual-System Bridge (v325.1)
  * Geliştirici: Muhammed (Kynex)
  * Özellikler: Long Press GPIO 0 -> Switch to KynexOS (OTA_0), 180° Analog Fix
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
@@ -75,31 +75,37 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// MUHAMMED: RETRO-GO İÇİNDEYKEN KYNEXOS'A (OTA_0) DÖNÜŞ GÖREVİ
+// MUHAMMED: RETRO-GO İÇİNDEYKEN KYNEXOS'A (OTA_0) DÖNÜŞ GÖREVİ - GELİŞTİRİLMİŞ
 static inline void kynex_switch_to_os_task(void *arg) {
-    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
+    // Pini tamamen sıfırlayıp giriş moduna alıyoruz (Pull-up ile)
+    gpio_reset_pin(GPIO_NUM_0);
+    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
+    
     int hold_timer = 0;
     while(1) {
-        // GPIO 0'a (Boot Tuşu) basılıp basılmadığını kontrol et
+        // GPIO 0'a (Boot Tuşu) basılıp basılmadığını kontrol et (LOW = Pressed)
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
             hold_timer++;
-            // Yaklaşık 2 saniye (20 x 100ms) basılı tutulursa
-            if(hold_timer > 20) { 
+            // Örnekleme 50ms, hold_timer > 40 demek yaklaşık 2 saniye demek
+            if(hold_timer > 40) { 
                 // KynexOS'un bulunduğu OTA_0 bölümünü bul
                 const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
                 if(target) { 
                     esp_ota_set_boot_partition(target); 
+                    vTaskDelay(pdMS_TO_TICKS(100));
                     esp_restart(); 
                 }
             }
         } else { 
             hold_timer = 0; 
         }
-        vTaskDelay(pdMS_TO_TICKS(100)); 
+        // Daha hassas algılama için 50ms bekleme
+        vTaskDelay(pdMS_TO_TICKS(50)); 
     }
 }
 
 // Başlangıçta bu görevi arka planda çalıştır
-#define RG_TARGET_INIT() xTaskCreate(kynex_switch_to_os_task, "kynex_os_sw", 2048, NULL, 5, NULL);
+#define RG_TARGET_INIT() xTaskCreate(kynex_switch_to_os_task, "kynex_os_sw", 2048, NULL, 10, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
