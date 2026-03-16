@@ -1,7 +1,7 @@
-/* * RetroGo Configuration - Kynex Sovereign Mirror Edition (v310.0)
+/* * RetroGo Configuration - Kynex Sovereign Rotated Edition (v311.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Right Joystick X-Axis Swap, MAX98357A Mono Fix, Dual Stick Sync
- * Donanım: ESP32-S3 N16R8 + MAX98357A
+ * Özellikler: 90 Degree Left Control Rotation, Original Logic Restored
+ * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -15,14 +15,14 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V310"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V311"
 
 // STORAGE
 #define RG_STORAGE_DRIVER           2              
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO - MUHAMMED: MAX98357A Mono Fix
+// AUDIO (MAX98357A I2S)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_DRIVER             1               
@@ -54,16 +54,17 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - MUHAMMED: SAĞ JOYSTİK SAĞ-SOL (X-B) TAKAS EDİLDİ
+// ANALOG JOYSTICK - MUHAMMED: 90 DERECE SOLA DÖNDÜRÜLMÜŞ KONTROLLER
+// Mantık: Fiziksel Sağ -> Yukarı, Fiziksel Sol -> Aşağı, Fiziksel Yukarı -> Sol, Fiziksel Aşağı -> Sağ
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000}, \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000}, \
-    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000} \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    /* Fiziksel Sağ */ \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, /* Fiziksel Sol */ \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    /* Fiziksel Yukarı */ \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, /* Fiziksel Aşağı */ \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    /* Sağ Stick Fiziksel Sağ */ \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, /* Sağ Stick Fiziksel Sol */ \
+    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    /* Sağ Stick Fiziksel Yukarı */ \
+    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}  /* Sağ Stick Fiziksel Aşağı */ \
 }
 
 #define RG_GAMEPAD_GPIO_MAP { \
