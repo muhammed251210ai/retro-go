@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Rotated Edition (v311.0)
+/* * RetroGo Configuration - Kynex Sovereign Synchronized Edition (v312.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: 90 Degree Left Control Rotation, Original Logic Restored
+ * Özellikler: Full Dual Analog 90° Left Rotation, MAX98357A Mono Audio Fix
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -15,7 +15,7 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V311"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V312"
 
 // STORAGE
 #define RG_STORAGE_DRIVER           2              
@@ -54,13 +54,13 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - MUHAMMED: 90 DERECE SOLA DÖNDÜRÜLMÜŞ KONTROLLER
-// Mantık: Fiziksel Sağ -> Yukarı, Fiziksel Sol -> Aşağı, Fiziksel Yukarı -> Sol, Fiziksel Aşağı -> Sağ
+// ANALOG JOYSTICK - MUHAMMED: TÜM KONTROLLER 90 DERECE SOLA DÖNDÜRÜLDÜ
+// Mantık: Fiziksel Sağ -> YUKARI | Fiziksel Sol -> AŞAĞI | Fiziksel Yukarı -> SOL | Fiziksel Aşağı -> SAĞ
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    /* Fiziksel Sağ */ \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, /* Fiziksel Sol */ \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    /* Fiziksel Yukarı */ \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, /* Fiziksel Aşağı */ \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    /* Sol Stick Fiziksel Sağ */ \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, /* Sol Stick Fiziksel Sol */ \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    /* Sol Stick Fiziksel Yukarı */ \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, /* Sol Stick Fiziksel Aşağı */ \
     {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    /* Sağ Stick Fiziksel Sağ */ \
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, /* Sağ Stick Fiziksel Sol */ \
     {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    /* Sağ Stick Fiziksel Yukarı */ \
