@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Dual-System Bridge (v325.1)
+/* * RetroGo Configuration - Kynex Sovereign Dual-System Bridge (v325.3)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Long Press GPIO 0 -> Switch to KynexOS (OTA_0), 180° Analog Fix
+ * Özellikler: GPIO 0 Hybrid Fix, Partition Error Report, Force Switch
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -14,6 +14,9 @@
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_system.h"
+
+// Retro-Go Video Driver'a erişim (Hata ekranı için)
+#include "rg_video.h" 
 
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V325"
 
@@ -57,7 +60,7 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - 180 DERECE TERS TUTUŞ İÇİN DÜZELTİLMİŞ DOĞAL YÖNLER
+// ANALOG JOYSTICK - 180 DERECE TERS TUTUŞ
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -75,37 +78,37 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// MUHAMMED: RETRO-GO İÇİNDEYKEN KYNEXOS'A (OTA_0) DÖNÜŞ GÖREVİ - GELİŞTİRİLMİŞ
-static inline void kynex_switch_to_os_task(void *arg) {
-    // Pini tamamen sıfırlayıp giriş moduna alıyoruz (Pull-up ile)
-    gpio_reset_pin(GPIO_NUM_0);
-    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
-    gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
-    
+// SİSTEM GEÇİŞ GÖREVİ - MUHAMMED: ZORLAYICI VE DENETLEYİCİ MOD
+static inline void kynex_enforcer_switch_task(void *arg) {
     int hold_timer = 0;
     while(1) {
-        // GPIO 0'a (Boot Tuşu) basılıp basılmadığını kontrol et (LOW = Pressed)
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
             hold_timer++;
-            // Örnekleme 50ms, hold_timer > 40 demek yaklaşık 2 saniye demek
-            if(hold_timer > 40) { 
-                // KynexOS'un bulunduğu OTA_0 bölümünü bul
+            // 3 saniye (60 * 50ms)
+            if(hold_timer > 60) { 
+                // ÖNCE: Haritada ota_0 (KynexOS) var mı kontrol et
                 const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                if(target) { 
+                
+                if(target != NULL) { 
+                    // BULUNDU: Boot sektörünü güncelle ve yeniden başlat
                     esp_ota_set_boot_partition(target); 
-                    vTaskDelay(pdMS_TO_TICKS(100));
                     esp_restart(); 
+                } else {
+                    // HATA: Bölüm bulunamadı! Ekranı mavi yap (BSOD stili)
+                    rg_video_draw_fill(0x001F); // Mavi ekran
+                    // Bu noktada ekrana yazı basmak için video sürücüsü meşgul olabilir
+                    // Cihazı kilitliyoruz ki Muhammed hatayı anlasın
+                    hold_timer = 0;
+                    while(gpio_get_level(GPIO_NUM_0) == 0) { vTaskDelay(10); } 
                 }
             }
         } else { 
             hold_timer = 0; 
         }
-        // Daha hassas algılama için 50ms bekleme
         vTaskDelay(pdMS_TO_TICKS(50)); 
     }
 }
 
-// Başlangıçta bu görevi arka planda çalıştır
-#define RG_TARGET_INIT() xTaskCreate(kynex_switch_to_os_task, "kynex_os_sw", 2048, NULL, 10, NULL);
+#define RG_TARGET_INIT() xTaskCreate(kynex_enforcer_switch_task, "kynex_switch", 2048, NULL, 10, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
