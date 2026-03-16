@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Core (v305.0)
+/* * RetroGo Configuration - Kynex Sovereign Sonic Edition (v307.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: No Undefs, Clean Syntax, SD Partition Mapped
+ * Özellikler: Dual Analog Sync, I2S Audio Fix, Absolute Logic
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -14,20 +14,22 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V305"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V307"
 
-// STORAGE - MUHAMMED: Dahili hafızayı SD Kart yapıyoruz!
+// STORAGE
 #define RG_STORAGE_DRIVER           2              
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO
+// AUDIO - MUHAMMED: SESİ CANLANDIRAN AYARLAR!
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
-#define RG_AUDIO_USE_PWM            0   
+#define RG_AUDIO_DRIVER             1               // I2S Driver Zorla
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
+#define RG_AUDIO_VOLUME_DEFAULT     80              // Başlangıç sesi %80
+#define RG_AUDIO_REVERSE_CHANNELS   0
 
 // VIDEO
 #define RG_SCREEN_DRIVER            0   
@@ -50,7 +52,9 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK
+// ANALOG JOYSTICK - MUHAMMED: SAĞ VE SOL MANTIK EŞİTLENDİ!
+// Sol Stick: UP/DOWN (CH3), LEFT/RIGHT (CH4)
+// Sağ Stick: X/B (CH6), Y/A (UNIT2-CH4) -> Artık aynı eşik değerlerine (0-1000 ve 3000-4096) sahipler.
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
