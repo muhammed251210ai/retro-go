@@ -1,6 +1,7 @@
-/* * RetroGo Configuration - Kynex Sovereign Sonic Edition (v307.0)
+/* * RetroGo Configuration - Kynex Sovereign Sonic Master (v308.0)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Dual Analog Sync, I2S Audio Fix, Absolute Logic
+ * Özellikler: MAX98357A I2S Audio Fix, Dual Joystick Logic Sync
+ * Donanım: ESP32-S3 N16R8 + MAX98357A
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -14,22 +15,23 @@
 #include "esp_partition.h"
 #include "esp_system.h"
 
-#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V307"
+#define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V308"
 
 // STORAGE
 #define RG_STORAGE_DRIVER           2              
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO - MUHAMMED: SESİ CANLANDIRAN AYARLAR!
+// AUDIO - MUHAMMED: MAX98357A İÇİN ÖZEL AYARLAR!
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
-#define RG_AUDIO_DRIVER             1               // I2S Driver Zorla
-#define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18
-#define RG_GPIO_SND_I2S_WS          GPIO_NUM_8
-#define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3
-#define RG_AUDIO_VOLUME_DEFAULT     80              // Başlangıç sesi %80
-#define RG_AUDIO_REVERSE_CHANNELS   0
+#define RG_AUDIO_DRIVER             1               // 1 = I2S
+#define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18     // Modüldeki BCLK
+#define RG_GPIO_SND_I2S_WS          GPIO_NUM_8      // Modüldeki LRC
+#define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3      // Modüldeki DIN
+#define RG_AUDIO_I2S_MONO           1               // MAX98357A Mono bir amfidir
+#define RG_AUDIO_VOLUME_DEFAULT     100             // Başlangıç sesi tam güç
+#define RG_AUDIO_I2S_PORT           I2S_NUM_0
 
 // VIDEO
 #define RG_SCREEN_DRIVER            0   
@@ -52,9 +54,8 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - MUHAMMED: SAĞ VE SOL MANTIK EŞİTLENDİ!
-// Sol Stick: UP/DOWN (CH3), LEFT/RIGHT (CH4)
-// Sağ Stick: X/B (CH6), Y/A (UNIT2-CH4) -> Artık aynı eşik değerlerine (0-1000 ve 3000-4096) sahipler.
+// ANALOG JOYSTICK - MUHAMMED: SAĞ VE SOL MANTIK TAMAMEN EŞİTLENDİ
+// 0-1000 ve 3000-4096 aralıkları her iki stick için de "Mantıksal İkiz" yapıldı.
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000}, \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -88,4 +89,10 @@ static inline void kynex_boot_switch_task(void *arg) {
 }
 #define RG_TARGET_INIT() xTaskCreate(kynex_boot_switch_task, "kynex_sw", 2048, NULL, 5, NULL);
 
-#endif /* _RG_TARGET_CONFIG_H_ */
+#undef PS
+#undef BIT
+#undef BIT8
+#undef BIT16
+#undef INTSET
+
+#endif
