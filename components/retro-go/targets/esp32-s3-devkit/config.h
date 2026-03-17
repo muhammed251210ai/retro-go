@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Hardware Interrogator (v325.6)
+/* * RetroGo Configuration - Kynex Sovereign Core-0 Master (v325.7)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Hardware Debug Blink, Priority 15 Task, 180° Inverted
+ * Özellikler: Core-0 Pinned Switch Task, 180° Inverted Analog, Hybrid Menu
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -76,41 +76,34 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// SİSTEM GEÇİŞ GÖREVİ - DONANIM TEŞHİSLİ
-static inline void kynex_switch_task(void *arg) {
-    // Pini her ihtimale karşı zorla GİRİŞ ve PULL-UP yapıyoruz
-    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
-    gpio_pullup_en(GPIO_NUM_0);
-
-    int counter = 0;
+// SİSTEM GEÇİŞ GÖREVİ - CORE 0 ÜZERİNDE ÇALIŞIR (EMÜLATÖR TARAFINDAN ASLA DONDURULAMAZ)
+static inline void kynex_core0_switch_task(void *arg) {
+    int hold_timer = 0;
     while(1) {
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
-            counter++;
-            // Süre 2 Saniye (40 * 50ms)
-            if(counter > 40) { 
+            hold_timer++;
+            // 1.5 Saniye (30 * 50ms)
+            if(hold_timer > 30) { 
                 const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
                 if(target != NULL) { 
-                    // BAŞARILI: KynexOS'a geç ve yeniden başlat
+                    // KYNEXOS BULUNDU: Geçiş yap
                     esp_ota_set_boot_partition(target); 
                     esp_restart(); 
                 } else {
-                    // HATA BİLDİRİMİ: KynexOS (OTA_0) haritada yok!
-                    // Işığı zorla kapatıp açarak Muhammed'e haber ver.
-                    gpio_set_direction(GPIO_NUM_1, GPIO_MODE_OUTPUT);
-                    gpio_set_level(GPIO_NUM_1, 0); // Ekran kararır
-                    vTaskDelay(pdMS_TO_TICKS(1000)); // 1 saniye bekle
-                    gpio_set_level(GPIO_NUM_1, 1); // Ekran geri gelir
-                    counter = 0; // Tekrar denemek için sıfırla
+                    // HARİTA HATASI: KynexOS (OTA_0) bulunamadı!
+                    // Sessiz kalmak yerine zorla cihazı yeniden başlatarak durumu belli et.
+                    esp_restart();
                 }
             }
         } else { 
-            counter = 0; 
+            hold_timer = 0; 
         }
         vTaskDelay(pdMS_TO_TICKS(50)); 
     }
 }
 
-// Öncelik en üst seviyede (15)
-#define RG_TARGET_INIT() xTaskCreate(kynex_switch_task, "kynex_switch", 2048, NULL, 15, NULL);
+// MUHAMMED: Görevi doğrudan işlemcinin 0. çekirdeğine (Core 0) sabitliyoruz! 
+// xTaskCreatePinnedToCore kullanıldı.
+#define RG_TARGET_INIT() xTaskCreatePinnedToCore(kynex_core0_switch_task, "k_sw", 2048, NULL, 20, NULL, 0);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
