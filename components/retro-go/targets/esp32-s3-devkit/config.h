@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Hybrid Masterpiece (v325.4)
+/* * RetroGo Configuration - Kynex Sovereign Absolute Hybrid (v325.5)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: GPIO 0 Short -> Menu | GPIO 0 Long -> KynexOS | 180° Inverted Analog
+ * Özellikler: Absolute Priority Switch Task (Priority 15), 180° Inverted
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -78,13 +78,12 @@
 
 // SİSTEM GEÇİŞ GÖREVİ - ARKA PLANDA ÇALIŞIR
 static inline void kynex_switch_task(void *arg) {
-    // Pin ayarlarını gamepad driver'ı bozmadan güvenli şekilde dinliyoruz
     int counter = 0;
     while(1) {
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
             counter++;
-            // Yaklaşık 3 saniye basılı tutulursa (60 * 50ms)
-            if(counter > 60) { 
+            // Süre 2 Saniyeye indirildi (40 * 50ms)
+            if(counter > 40) { 
                 const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
                 if(target != NULL) { 
                     esp_ota_set_boot_partition(target); 
@@ -98,6 +97,7 @@ static inline void kynex_switch_task(void *arg) {
     }
 }
 
-#define RG_TARGET_INIT() xTaskCreate(kynex_switch_task, "kynex_switch", 2048, NULL, 5, NULL);
+// MUHAMMED: Öncelik (Priority) 5'ten 15'e çıkarıldı! Sistem bu görevi asla görmezden gelemez.
+#define RG_TARGET_INIT() xTaskCreate(kynex_switch_task, "kynex_switch", 2048, NULL, 15, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
