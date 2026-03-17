@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Virtual Pin Bridge (v325.9)
+/* * RetroGo Configuration - Kynex Sovereign Phantom Driver (v325.10)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Smart Release for Menu (Virtual Pin 21), Long Press for KynexOS
+ * Özellikler: API Interception (Macro Hack), Phantom Pin 21, Absolute Switch
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -14,6 +14,21 @@
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_system.h"
+
+// =========================================================================
+// MUHAMMED: RETRO-GO'YU KÖR EDEN KOD (API INTERCEPTION)
+// Retro-Go her tuş kontrolü yaptığında bu filtreye takılacak.
+static inline int kynex_gpio_get_level_wrapper(gpio_num_t pin) {
+    // Eğer Retro-Go 0. pini (BOOT) sorarsa, ONA HER ZAMAN 1 (BASILMADI) DÖNDÜR!
+    if (pin == GPIO_NUM_0) {
+        return 1; 
+    }
+    // Diğer tüm pinler için gerçek sistem fonksiyonunu çağır
+    return (gpio_get_level)(pin); 
+}
+// Sistemin orjinal komutunu bizim hayalet fonksiyonla değiştiriyoruz
+#define gpio_get_level kynex_gpio_get_level_wrapper
+// =========================================================================
 
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V325"
 
@@ -69,49 +84,46 @@
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}  \
 }
 
-// MUHAMMED: MENÜ TUŞUNU FİZİKSEL 0'DAN ALIP SANAL 21. PİNE (GPIO 21) BAĞLADIK!
+// MUHAMMED: Menü tuşu artık sanal bir pin olan GPIO 21'de bekliyor.
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
 }
 
-// SİSTEM GEÇİŞ GÖREVİ VE SANAL TUŞ TETİKLEYİCİ
-static inline void kynex_smart_switch_task(void *arg) {
-    // Fiziksel Tuş Ayarı (Bizim izleyeceğimiz tuş)
-    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
-    gpio_pullup_en(GPIO_NUM_0);
-
-    // Sanal Menü Tuşu Ayarı (Retro-Go'yu kandırmak için ÇIKIŞ olarak ayarlıyoruz)
-    gpio_set_direction(GPIO_NUM_21, GPIO_MODE_OUTPUT);
-    gpio_set_level(GPIO_NUM_21, 1); // 1 = Basılmamış durumda tut
-
+// KARAR MEKANİZMASI: Sadece bu görev gerçek 0. pini okuyabilir.
+static inline void kynex_phantom_switch_task(void *arg) {
     int hold_timer = 0;
     bool was_pressed = false;
 
+    // Gerçek pini okumak için donanımı hazırlıyoruz
+    (gpio_set_direction)(GPIO_NUM_0, GPIO_MODE_INPUT);
+    (gpio_set_pull_mode)(GPIO_NUM_0, GPIO_PULLUP_ONLY);
+
     while(1) {
-        if(gpio_get_level(GPIO_NUM_0) == 0) { 
-            // TUŞA BASILIYOR (Retro-Go'nun haberi yok)
+        // Parantez içindeki (gpio_get_level) hack'i bypass eder ve GERÇEK tuşu okur!
+        if((gpio_get_level)(GPIO_NUM_0) == 0) { 
             was_pressed = true;
             hold_timer++;
             
-            // 1.5 saniye (30 * 50ms) dolarsa, KynexOS'a geç!
+            // 1.5 Saniye basılı tutuldu mu? (30 * 50ms)
             if(hold_timer > 30) { 
                 const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                if(target != NULL) { 
+                if(target) { 
                     esp_ota_set_boot_partition(target); 
                     esp_restart(); 
                 } else {
-                    esp_restart(); // Harita hatası varsa bile restart at
+                    esp_restart(); // Hata varsa da sistemi sıfırla
                 }
             }
         } else { 
-            // TUŞ BIRAKILDI
+            // TUŞ BIRAKILDIĞINDA
             if(was_pressed && hold_timer > 0 && hold_timer <= 30) {
-                // Eğer kısa basılıp bırakıldıysa, SANAL PİNE BAS ve menüyü açtır!
-                gpio_set_level(GPIO_NUM_21, 0); // Sanal tuşu aşağı çek (Basıldı simülasyonu)
-                vTaskDelay(pdMS_TO_TICKS(100)); // Retro-Go'nun hissetmesi için 100ms bekle
-                gpio_set_level(GPIO_NUM_21, 1); // Sanal tuşu bırak
+                // KISA BASILDI! Şimdi Retro-Go'yu kandırmak için Sanal Pin 21'i çekiyoruz
+                (gpio_set_direction)(GPIO_NUM_21, GPIO_MODE_INPUT_OUTPUT);
+                (gpio_set_level)(GPIO_NUM_21, 0); // Sanal tuşa basıldı
+                vTaskDelay(pdMS_TO_TICKS(100));   // 100ms basılı tut
+                (gpio_set_level)(GPIO_NUM_21, 1); // Sanal tuşu bırak
             }
             was_pressed = false;
             hold_timer = 0; 
@@ -120,7 +132,7 @@ static inline void kynex_smart_switch_task(void *arg) {
     }
 }
 
-// En yüksek öncelikle görevi başlatıyoruz
-#define RG_TARGET_INIT() xTaskCreate(kynex_smart_switch_task, "kynex_smart", 2048, NULL, 15, NULL);
+// Görevi en yüksek öncelikle (15) çekirdek 0'a sabitliyoruz
+#define RG_TARGET_INIT() xTaskCreatePinnedToCore(kynex_phantom_switch_task, "k_phn", 2048, NULL, 15, NULL, 0);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
