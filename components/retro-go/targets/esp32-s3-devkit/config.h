@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Core-0 Master (v325.7)
+/* * RetroGo Configuration - Kynex Sovereign Titanium Timer (v325.8)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Core-0 Pinned Switch Task, 180° Inverted Analog, Hybrid Menu
+ * Özellikler: ESP-Timer Hardware Interrupt Switch, 180° Inverted, Hybrid Menu
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -14,6 +14,7 @@
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_system.h"
+#include "esp_timer.h" // MUHAMMED: YENİ DONANIMSAL ZAMANLAYICI SİSTEMİ
 
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V325"
 
@@ -76,34 +77,43 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// SİSTEM GEÇİŞ GÖREVİ - CORE 0 ÜZERİNDE ÇALIŞIR (EMÜLATÖR TARAFINDAN ASLA DONDURULAMAZ)
-static inline void kynex_core0_switch_task(void *arg) {
-    int hold_timer = 0;
-    while(1) {
-        if(gpio_get_level(GPIO_NUM_0) == 0) { 
-            hold_timer++;
-            // 1.5 Saniye (30 * 50ms)
-            if(hold_timer > 30) { 
-                const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-                if(target != NULL) { 
-                    // KYNEXOS BULUNDU: Geçiş yap
-                    esp_ota_set_boot_partition(target); 
-                    esp_restart(); 
-                } else {
-                    // HARİTA HATASI: KynexOS (OTA_0) bulunamadı!
-                    // Sessiz kalmak yerine zorla cihazı yeniden başlatarak durumu belli et.
-                    esp_restart();
-                }
+// MUHAMMED: SİSTEM GEÇİŞİNİ TASK YERİNE ESP_TIMER (DONANIMSAL ZAMANLAYICI) İLE YAPIYORUZ
+// Bu sayede Retro-Go menüsü açılsa bile bu işlemi ASLA donduramaz.
+static void kynex_timer_callback(void* arg) {
+    static int hold_timer = 0;
+    // Pinin durumunu donanımdan doğrudan oku
+    if(gpio_get_level(GPIO_NUM_0) == 0) { 
+        hold_timer++;
+        // Her 100ms'de bir sayar. 20 = 2 Saniye.
+        if(hold_timer > 20) { 
+            const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+            if(target != NULL) { 
+                esp_ota_set_boot_partition(target); 
+                esp_restart(); 
+            } else {
+                // Eğer KynexOS (OTA_0) haritada yoksa, zorla cihazı kapatıp açarak hatayı belli et
+                esp_restart();
             }
-        } else { 
-            hold_timer = 0; 
         }
-        vTaskDelay(pdMS_TO_TICKS(50)); 
+    } else { 
+        // Tuş bırakıldığında sayacı sıfırla
+        hold_timer = 0; 
     }
 }
 
-// MUHAMMED: Görevi doğrudan işlemcinin 0. çekirdeğine (Core 0) sabitliyoruz! 
-// xTaskCreatePinnedToCore kullanıldı.
-#define RG_TARGET_INIT() xTaskCreatePinnedToCore(kynex_core0_switch_task, "k_sw", 2048, NULL, 20, NULL, 0);
+// Timer'ı başlatma fonksiyonu
+static inline void kynex_init_hardware_timer() {
+    const esp_timer_create_args_t kynex_timer_args = {
+        .callback = &kynex_timer_callback,
+        .name = "kynex_hw_timer"
+    };
+    esp_timer_handle_t kynex_timer;
+    esp_timer_create(&kynex_timer_args, &kynex_timer);
+    // Timer'ı her 100,000 mikrosaniyede (100ms) bir çalışacak şekilde kur
+    esp_timer_start_periodic(kynex_timer, 100000); 
+}
+
+// Başlangıçta Task yerine doğrudan Timer'ı devreye sokuyoruz!
+#define RG_TARGET_INIT() kynex_init_hardware_timer();
 
 #endif /* _RG_TARGET_CONFIG_H_ */
