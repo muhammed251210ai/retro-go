@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Titanium Timer (v325.8)
+/* * RetroGo Configuration - Kynex Sovereign Virtual Pin Bridge (v325.9)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: ESP-Timer Hardware Interrupt Switch, 180° Inverted, Hybrid Menu
+ * Özellikler: Smart Release for Menu (Virtual Pin 21), Long Press for KynexOS
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -14,7 +14,6 @@
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_system.h"
-#include "esp_timer.h" // MUHAMMED: YENİ DONANIMSAL ZAMANLAYICI SİSTEMİ
 
 #define RG_TARGET_NAME             "KYNEX-SOVEREIGN-V325"
 
@@ -70,50 +69,58 @@
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}  \
 }
 
-// GPIO 0 HEM MENÜ TUŞUDUR (KISA BASIŞ) HEM DE SİSTEM DEĞİŞTİRİCİ (UZUN BASIŞ)
+// MUHAMMED: MENÜ TUŞUNU FİZİKSEL 0'DAN ALIP SANAL 21. PİNE (GPIO 21) BAĞLADIK!
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
-    {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
+    {RG_KEY_MENU,   .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
 }
 
-// MUHAMMED: SİSTEM GEÇİŞİNİ TASK YERİNE ESP_TIMER (DONANIMSAL ZAMANLAYICI) İLE YAPIYORUZ
-// Bu sayede Retro-Go menüsü açılsa bile bu işlemi ASLA donduramaz.
-static void kynex_timer_callback(void* arg) {
-    static int hold_timer = 0;
-    // Pinin durumunu donanımdan doğrudan oku
-    if(gpio_get_level(GPIO_NUM_0) == 0) { 
-        hold_timer++;
-        // Her 100ms'de bir sayar. 20 = 2 Saniye.
-        if(hold_timer > 20) { 
-            const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
-            if(target != NULL) { 
-                esp_ota_set_boot_partition(target); 
-                esp_restart(); 
-            } else {
-                // Eğer KynexOS (OTA_0) haritada yoksa, zorla cihazı kapatıp açarak hatayı belli et
-                esp_restart();
+// SİSTEM GEÇİŞ GÖREVİ VE SANAL TUŞ TETİKLEYİCİ
+static inline void kynex_smart_switch_task(void *arg) {
+    // Fiziksel Tuş Ayarı (Bizim izleyeceğimiz tuş)
+    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
+    gpio_pullup_en(GPIO_NUM_0);
+
+    // Sanal Menü Tuşu Ayarı (Retro-Go'yu kandırmak için ÇIKIŞ olarak ayarlıyoruz)
+    gpio_set_direction(GPIO_NUM_21, GPIO_MODE_OUTPUT);
+    gpio_set_level(GPIO_NUM_21, 1); // 1 = Basılmamış durumda tut
+
+    int hold_timer = 0;
+    bool was_pressed = false;
+
+    while(1) {
+        if(gpio_get_level(GPIO_NUM_0) == 0) { 
+            // TUŞA BASILIYOR (Retro-Go'nun haberi yok)
+            was_pressed = true;
+            hold_timer++;
+            
+            // 1.5 saniye (30 * 50ms) dolarsa, KynexOS'a geç!
+            if(hold_timer > 30) { 
+                const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+                if(target != NULL) { 
+                    esp_ota_set_boot_partition(target); 
+                    esp_restart(); 
+                } else {
+                    esp_restart(); // Harita hatası varsa bile restart at
+                }
             }
+        } else { 
+            // TUŞ BIRAKILDI
+            if(was_pressed && hold_timer > 0 && hold_timer <= 30) {
+                // Eğer kısa basılıp bırakıldıysa, SANAL PİNE BAS ve menüyü açtır!
+                gpio_set_level(GPIO_NUM_21, 0); // Sanal tuşu aşağı çek (Basıldı simülasyonu)
+                vTaskDelay(pdMS_TO_TICKS(100)); // Retro-Go'nun hissetmesi için 100ms bekle
+                gpio_set_level(GPIO_NUM_21, 1); // Sanal tuşu bırak
+            }
+            was_pressed = false;
+            hold_timer = 0; 
         }
-    } else { 
-        // Tuş bırakıldığında sayacı sıfırla
-        hold_timer = 0; 
+        vTaskDelay(pdMS_TO_TICKS(50)); 
     }
 }
 
-// Timer'ı başlatma fonksiyonu
-static inline void kynex_init_hardware_timer() {
-    const esp_timer_create_args_t kynex_timer_args = {
-        .callback = &kynex_timer_callback,
-        .name = "kynex_hw_timer"
-    };
-    esp_timer_handle_t kynex_timer;
-    esp_timer_create(&kynex_timer_args, &kynex_timer);
-    // Timer'ı her 100,000 mikrosaniyede (100ms) bir çalışacak şekilde kur
-    esp_timer_start_periodic(kynex_timer, 100000); 
-}
-
-// Başlangıçta Task yerine doğrudan Timer'ı devreye sokuyoruz!
-#define RG_TARGET_INIT() kynex_init_hardware_timer();
+// En yüksek öncelikle görevi başlatıyoruz
+#define RG_TARGET_INIT() xTaskCreate(kynex_smart_switch_task, "kynex_smart", 2048, NULL, 15, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
