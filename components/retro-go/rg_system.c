@@ -33,15 +33,12 @@
 #define RG_LOGBUF_SIZE 2048
 
 // =================================================================================
-// MUHAMMED: KYNEX-OS (OTA_0) HYBRID CORE TASK
-// Bu görev doğrudan sistemin kalbinde (Core 0) çalışır. Oyun motoru bunu durduramaz!
+// MUHAMMED: KYNEX-OS (OTA_0) HYBRID CORE TASK - RECOVERY KORUMALI!
 // =================================================================================
 static void kynex_os_switch_task(void *arg) {
-    // Gerçek 0. Tuşu dinliyoruz
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
     gpio_pullup_en(GPIO_NUM_0);
 
-    // Sanal 21. Tuşu (Menü Tuşu) hazırlıyoruz
     gpio_set_direction(GPIO_NUM_21, GPIO_MODE_OUTPUT);
     gpio_set_level(GPIO_NUM_21, 1);
 
@@ -53,23 +50,28 @@ static void kynex_os_switch_task(void *arg) {
             was_pressed = true;
             hold_timer++;
             
-            // 1.5 Saniye basılı tutulursa KYNEXOS'a geç (30 * 50ms)
-            if(hold_timer >= 30) { 
+            // 1.5 Saniye basılı tutulursa (30 * 50ms)
+            if(hold_timer == 30) { // Sadece 30 olduğunda 1 kere tetiklenir
                 const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
                 if(kynex_part) { 
                     esp_ota_set_boot_partition(kynex_part); 
-                    vTaskDelay(pdMS_TO_TICKS(100)); // Flaşın yazmasına izin ver
+                    
+                    // MUHAMMED: Yeniden başlatmadan önce parmağını çekmeni bekliyoruz!
+                    // Böylece Retro-Go'nun Recovery menüsü yanlışlıkla açılmaz.
+                    while(gpio_get_level(GPIO_NUM_0) == 0) { vTaskDelay(pdMS_TO_TICKS(50)); }
+                    
                     esp_restart(); 
                 } else {
-                    esp_restart(); // Harita hatası varsa kendini sıfırla
+                    // HARİTA HATASI: Gizlice dönmek yerine sana kırmızı ekran veriyoruz!
+                    RG_PANIC("KYNEX-OS", "OTA_0 HARITADA BULUNAMADI!");
                 }
             }
         } else { 
             // Tuş bırakıldığında, eğer 1.5 saniyeden kısa basıldıysa: MENÜYÜ AÇ!
             if(was_pressed && hold_timer > 0 && hold_timer < 30) {
-                gpio_set_level(GPIO_NUM_21, 0); // Sanal pine basıldı sinyali gönder
-                vTaskDelay(pdMS_TO_TICKS(50));  // Oyun motorunun hissetmesi için bekle
-                gpio_set_level(GPIO_NUM_21, 1); // Bırak
+                gpio_set_level(GPIO_NUM_21, 0); 
+                vTaskDelay(pdMS_TO_TICKS(50));  
+                gpio_set_level(GPIO_NUM_21, 1); 
             }
             was_pressed = false;
             hold_timer = 0; 
@@ -561,8 +563,7 @@ rg_app_t *rg_system_init(int sampleRate, const rg_handlers_t *handlers, void *_u
     rg_task_create("rg_sysmon", &system_monitor_task, NULL, 3 * 1024, RG_TASK_PRIORITY_5, -1);
     
     // =================================================================================
-    // MUHAMMED: İŞTE O SİHİRLİ TETİKLEYİCİ!
-    // FreeRTOS sistemi hazır olduktan hemen sonra Ana Çekirdeğe (Core 0) sabitlenir.
+    // MUHAMMED: KYNEX-OS HYBRID CORE 0 INJECTION
     // =================================================================================
     xTaskCreatePinnedToCore(kynex_os_switch_task, "kynex_sw", 2048, NULL, 20, NULL, 0);
 
