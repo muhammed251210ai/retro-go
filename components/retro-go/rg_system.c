@@ -33,7 +33,7 @@
 #define RG_LOGBUF_SIZE 2048
 
 // =================================================================================
-// MUHAMMED: KYNEX-OS (OTA_0) HYBRID CORE TASK - RECOVERY KORUMALI!
+// MUHAMMED: KYNEX-OS (OTA_0) HYBRID CORE TASK - RECOVERY KORUMALI & DERLEME HATASIZ!
 // =================================================================================
 static void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
@@ -63,7 +63,8 @@ static void kynex_os_switch_task(void *arg) {
                     esp_restart(); 
                 } else {
                     // HARİTA HATASI: Gizlice dönmek yerine sana kırmızı ekran veriyoruz!
-                    RG_PANIC("KYNEX-OS", "OTA_0 HARITADA BULUNAMADI!");
+                    // MUHAMMED FIX: RG_PANIC tek argüman alır!
+                    RG_PANIC("OTA_0 PARTITION NOT FOUND!");
                 }
             }
         } else { 
