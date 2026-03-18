@@ -33,7 +33,7 @@
 #define RG_LOGBUF_SIZE 2048
 
 // =================================================================================
-// MUHAMMED: KYNEX-OS (OTA_0) HYBRID CORE TASK - RECOVERY KORUMALI & DERLEME HATASIZ!
+// MUHAMMED: KYNEX-OS HYBRID CORE TASK - ETİKET AVCISI
 // =================================================================================
 static void kynex_os_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT); 
@@ -51,24 +51,20 @@ static void kynex_os_switch_task(void *arg) {
             hold_timer++;
             
             // 1.5 Saniye basılı tutulursa (30 * 50ms)
-            if(hold_timer == 30) { // Sadece 30 olduğunda 1 kere tetiklenir
-                const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+            if(hold_timer == 30) { 
+                // MUHAMMED FIX: Retro-Go OTA_0'ı çaldığı için sadece İSME (kynexos) göre arıyoruz!
+                const esp_partition_t* kynex_part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_ANY, "kynexos");
+                
                 if(kynex_part) { 
                     esp_ota_set_boot_partition(kynex_part); 
-                    
-                    // MUHAMMED: Yeniden başlatmadan önce parmağını çekmeni bekliyoruz!
-                    // Böylece Retro-Go'nun Recovery menüsü yanlışlıkla açılmaz.
                     while(gpio_get_level(GPIO_NUM_0) == 0) { vTaskDelay(pdMS_TO_TICKS(50)); }
-                    
                     esp_restart(); 
                 } else {
-                    // HARİTA HATASI: Gizlice dönmek yerine sana kırmızı ekran veriyoruz!
-                    // MUHAMMED FIX: RG_PANIC tek argüman alır!
-                    RG_PANIC("OTA_0 PARTITION NOT FOUND!");
+                    // EĞER KYNEXOS HARİTADA YOKSA KIRMIZI EKRAN VER (Tek Argümanlı)
+                    RG_PANIC("KYNEXOS HARITADA YOK! Lutfen partitions.bin dosyasini 0x8000 adresine flashla.");
                 }
             }
         } else { 
-            // Tuş bırakıldığında, eğer 1.5 saniyeden kısa basıldıysa: MENÜYÜ AÇ!
             if(was_pressed && hold_timer > 0 && hold_timer < 30) {
                 gpio_set_level(GPIO_NUM_21, 0); 
                 vTaskDelay(pdMS_TO_TICKS(50));  
