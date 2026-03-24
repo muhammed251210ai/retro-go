@@ -22,13 +22,13 @@
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO (MAX98357A I2S)
+// AUDIO (MAX98357A I2S) - MUHAMMED: ZAFER PİNLERİNE (17, 18, 5) GÜNCELLENDİ
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_DRIVER             1               
-#define RG_GPIO_SND_I2S_BCK         GPIO_NUM_18     
-#define RG_GPIO_SND_I2S_WS          GPIO_NUM_8      
-#define RG_GPIO_SND_I2S_DATA        GPIO_NUM_3      
+#define RG_GPIO_SND_I2S_BCK         GPIO_NUM_17     
+#define RG_GPIO_SND_I2S_WS          GPIO_NUM_18     
+#define RG_GPIO_SND_I2S_DATA        GPIO_NUM_5      
 #define RG_AUDIO_I2S_MONO           1               
 #define RG_AUDIO_VOLUME_DEFAULT     100             
 #define RG_AUDIO_I2S_PORT           I2S_NUM_0
