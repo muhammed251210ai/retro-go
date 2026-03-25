@@ -1,6 +1,6 @@
 /* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.12)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Crash-Free Switch, Core-0 Pinned, 180° Inverted, Hardware Failsafe
+ * Özellikler: Hardware Conflict Resolved, Safe Pin Mapping, Crash-Free OTA
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -22,7 +22,7 @@
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO (MAX98357A I2S) - MUHAMMED: ZAFER PİNLERİNE (17, 18, 5) GÜNCELLENDİ
+// AUDIO (MAX98357A I2S) - MUHAMMED: ÇAKIŞMASIZ ZAFER PİNLERİ
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_DRIVER             1               
@@ -57,22 +57,22 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - 180 DERECE TERS TUTUŞ
+// ANALOG JOYSTICK - MUHAMMED: Joy1 Y Ekseni Pin 6'ya (ADC_CHANNEL_5) Alındı
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
     {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}  \
 }
 
-// FİZİKSEL 0. PİN MENÜ TUŞU OLARAK TANIMLI KALIYOR
+// DİJİTAL BUTONLAR - MUHAMMED: Select(3) ve Start(8) güvenli pinlere alındı!
 #define RG_GAMEPAD_GPIO_MAP { \
-    {RG_KEY_SELECT, .num = GPIO_NUM_6,  .pullup = 1, .level = 0}, \
-    {RG_KEY_START,  .num = GPIO_NUM_17, .pullup = 1, .level = 0}, \
+    {RG_KEY_SELECT, .num = GPIO_NUM_3,  .pullup = 1, .level = 0}, \
+    {RG_KEY_START,  .num = GPIO_NUM_8,  .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
