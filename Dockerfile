@@ -1,5 +1,5 @@
 # **************************************************************************
-# * Kynex Sovereign - The Hijacker Dockerfile v306.0
+# * Kynex Sovereign - The Hijacker Dockerfile v306.1
 # * Geliştirici: Muhammed (Kynex)
 # * Görev: Bootloader, Partitions ve Core'ları Ayrı Ayrı Üretir ve Birleştirir!
 # **************************************************************************
@@ -32,15 +32,17 @@ RUN . /opt/esp/idf/export.sh && \
     python3 $IDF_PATH/components/partition_table/gen_esp32part.py kynex_map.csv /kynex_out/kynex_partitions.bin && \
     find build -name "bootloader.bin" -exec cp {} /kynex_out/kynex_bootloader.bin \; || true
 
-# SADECE Launcher ve Core'ları Tek Bir Dosyada Birleştir (Bootloader ve Partitions HARİÇ)
-RUN . /opt/esp/idf/export.sh && \
-    esptool.py --chip esp32s3 merge_bin -o /kynex_out/kynex_apps_combined.bin \
-    0x10000 $(find build -name "launcher.bin" | head -n 1) \
-    0x110000 $(find build -name "retro-core.bin" | head -n 1) \
-    0x210000 $(find build -name "prboom-go.bin" | head -n 1) \
-    0x2d0000 $(find build -name "gwenesis.bin" | head -n 1) \
-    0x3d0000 $(find build -name "fmsx.bin" | head -n 1) || true
-
-# Diğer Çıktıları Topla (Güvenlik İçin Tam Dosyalar)
+# Diğer Çıktıları Topla (Güvenlik İçin Tam Dosyalar - BİRLEŞTİRMEDEN ÖNCE EKLENİYOR!)
 RUN find . -maxdepth 3 -name "*.img" -exec cp {} /kynex_out/kynex_full_system.img \; || true && \
     find . -name "*.bin" -exec cp {} /kynex_out/ \; || true
+
+# MUHAMMED: SADECE Launcher ve Core'ları Tek Bir Dosyada Birleştir
+# Bütün .bin dosyaları artık kynex_out klasöründe olduğu için doğrudan isimleriyle çağırıyoruz!
+RUN . /opt/esp/idf/export.sh && \
+    cd /kynex_out && \
+    esptool.py --chip esp32s3 merge_bin -o kynex_apps_combined.bin \
+    0x10000 launcher.bin \
+    0x110000 retro-core.bin \
+    0x210000 prboom-go.bin \
+    0x2d0000 gwenesis.bin \
+    0x3d0000 fmsx.bin || true
