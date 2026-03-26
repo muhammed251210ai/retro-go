@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.16)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.17)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Joystick Deadzone Fix (Anti-Recovery), FFAT Storage Link
+ * Özellikler: Extreme Deadzone (Anti-Recovery Crash), Pure I2S Audio Fix
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -20,19 +20,16 @@
 // STORAGE
 #define RG_STORAGE_DRIVER           2              
 #define RG_STORAGE_ROOT             "/sd"          
-#define RG_STORAGE_FLASH_PARTITION  "ffat"      // MUHAMMED: Kilit nokta! "storage" değil "ffat" olmalı.
+#define RG_STORAGE_FLASH_PARTITION  "ffat"      
 
 // AUDIO (MAX98357A I2S) 
+// MUHAMMED: Çakışan komutlar temizlendi, sadece saf I2S köprüsü bırakıldı!
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_USE_I2S            1   
-#define RG_AUDIO_DRIVER             1               
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_17     
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_18     
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_5      
-#define RG_AUDIO_I2S_MONO           1               
-#define RG_AUDIO_VOLUME_DEFAULT     100             
-#define RG_AUDIO_I2S_PORT           I2S_NUM_0
 
 // VIDEO & BACKLIGHT
 #define RG_SCREEN_DRIVER            0   
@@ -58,17 +55,17 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - Ölü Bölge (Deadzone) Genişletildi! (600 ve 3400 sınırları)
-// Bu sayede joystick boşta dururken sisteme "tuşa basılıyor" sinyali göndermez.
+// ANALOG JOYSTICK - KUSURSUZ ÖLÜ BÖLGE (ANTI-RECOVERY)
+// Parazitlerin sistemi çökertmemesi için sınırlar en uç noktalara (200 ve 3800) çekildi!
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 600},    \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3400, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3400, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 600},    \
-    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 600},    \
-    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3400, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 600},    \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3400, 4096}  \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 200},    \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3800, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3800, 4096}, \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 200},    \
+    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 200},    \
+    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3800, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 200},    \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3800, 4096}  \
 }
 
 // DİJİTAL BUTONLAR
