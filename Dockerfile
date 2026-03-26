@@ -1,7 +1,7 @@
 # **************************************************************************
-# * Kynex Sovereign - The Hijacker Dockerfile v306.1
+# * Kynex Sovereign - The Hijacker Dockerfile v306.2
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: Bootloader, Partitions ve Core'ları Ayrı Ayrı Üretir ve Birleştirir!
+# * Görev: 0x410000 Başlangıçlı Yeni Harita ve Sadece Uygulamaları Birleştirme!
 # **************************************************************************
 FROM espressif/idf:release-v4.4
 WORKDIR /app
@@ -18,8 +18,8 @@ RUN find retro-core/components/snes9x -type f -exec sed -i 's/\bBIT8\b/SNES_BIT8
 RUN find retro-core/components/handy -type f -exec sed -i 's/\bINTSET\b/HANDY_INTSET/g' {} + || true
 RUN find retro-core/components/handy -type f -exec sed -i 's/\bPS\b/HANDY_PS/g' {} + || true
 
-# MUHAMMED: KENDİ HARİTAMIZI YAZIYORUZ! (Logdaki adreslere göre milimetrik hesaplandı)
-RUN echo -e "nvs,data,nvs,0x9000,0x4000,\notadata,data,ota,0xd000,0x2000,\nphy_init,data,phy,0xf000,0x1000,\nlauncher,app,ota_0,0x10000,0x100000,\nretro-core,app,ota_1,0x110000,0x100000,\nprboom-go,app,ota_2,0x210000,0x0c0000,\ngwenesis,app,ota_3,0x2d0000,0x100000,\nfmsx,app,ota_4,0x3d0000,0x090000,\nstorage,data,fat,0x460000,0xBA0000," > kynex_map.csv
+# MUHAMMED: KENDİ HARİTAMIZI YAZIYORUZ! (KynexOS'a 4MB Ayrıldı, Retro-Go 0x410000'den Başlıyor)
+RUN echo -e "nvs,data,nvs,0x9000,0x4000,\notadata,data,ota,0xd000,0x2000,\nphy_init,data,phy,0xf000,0x1000,\nkynexos,app,factory,0x10000,0x400000,\nlauncher,app,ota_0,0x410000,0x100000,\nretro-core,app,ota_1,0x510000,0x100000,\nprboom-go,app,ota_2,0x610000,0x0c0000,\ngwenesis,app,ota_3,0x6d0000,0x100000,\nfmsx,app,ota_4,0x7d0000,0x090000,\nstorage,data,fat,0x860000,0x7A0000," > kynex_map.csv
 
 # Derleme Aşaması ve Haritayı Derleme
 RUN mkdir -p /kynex_out && \
@@ -36,13 +36,12 @@ RUN . /opt/esp/idf/export.sh && \
 RUN find . -maxdepth 3 -name "*.img" -exec cp {} /kynex_out/kynex_full_system.img \; || true && \
     find . -name "*.bin" -exec cp {} /kynex_out/ \; || true
 
-# MUHAMMED: SADECE Launcher ve Core'ları Tek Bir Dosyada Birleştir
-# Bütün .bin dosyaları artık kynex_out klasöründe olduğu için doğrudan isimleriyle çağırıyoruz!
+# MUHAMMED: SADECE Launcher ve Core'ları 0x410000 Referansıyla Birleştir
 RUN . /opt/esp/idf/export.sh && \
     cd /kynex_out && \
     esptool.py --chip esp32s3 merge_bin -o kynex_apps_combined.bin \
-    0x10000 launcher.bin \
-    0x110000 retro-core.bin \
-    0x210000 prboom-go.bin \
-    0x2d0000 gwenesis.bin \
-    0x3d0000 fmsx.bin || true
+    0x410000 launcher.bin \
+    0x510000 retro-core.bin \
+    0x610000 prboom-go.bin \
+    0x6d0000 gwenesis.bin \
+    0x7d0000 fmsx.bin || true
