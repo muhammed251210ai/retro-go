@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.17-FIX)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.22)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Extreme Deadzone (Anti-Recovery Crash), Pure I2S Audio Fix, Millivolt Navigation Fix
+ * Özellikler: 4096 Limit Fix (Blind Spot Removed), 100% KynexOS Axis Translation
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -55,17 +55,17 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - MENÜ GEZİNME (MİLİVOLT) DÜZELTMESİ
-// İmkansız 3800 sınırı, ulaşılabilir olan 2600-3300 bandına çekildi!
+// ANALOG JOYSTICK - KUSURSUZ 4096 LİMİTİ VE EKSEN TERCÜMESİ!
+// MUHAMMED: Tavan limiti 4096 yapılarak kör nokta kaldırıldı. KynexOS ile birebir eşlendi.
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 800},    \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 2600, 3300}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 2600, 3300}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 800},    \
-    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 800},    \
-    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 2600, 3300}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 800},    \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 2600, 3300}  \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 2600, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 2600, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 2600, 4096}, \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 2600, 4096}  \
 }
 
 // DİJİTAL BUTONLAR
