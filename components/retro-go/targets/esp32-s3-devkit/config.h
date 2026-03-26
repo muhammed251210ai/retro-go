@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.17)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.18)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Extreme Deadzone (Anti-Recovery Crash), Pure I2S Audio Fix
+ * Özellikler: JTAG Pin (GPIO3) Bypassed -> GPIO21, Pure I2S Audio, Anti-Crash Deadzone
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -23,7 +23,6 @@
 #define RG_STORAGE_FLASH_PARTITION  "ffat"      
 
 // AUDIO (MAX98357A I2S) 
-// MUHAMMED: Çakışan komutlar temizlendi, sadece saf I2S köprüsü bırakıldı!
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_USE_I2S            1   
@@ -55,8 +54,7 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - KUSURSUZ ÖLÜ BÖLGE (ANTI-RECOVERY)
-// Parazitlerin sistemi çökertmemesi için sınırlar en uç noktalara (200 ve 3800) çekildi!
+// ANALOG JOYSTICK - KUSURSUZ ÖLÜ BÖLGE 
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 200},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3800, 4096}, \
@@ -69,8 +67,9 @@
 }
 
 // DİJİTAL BUTONLAR
+// MUHAMMED: DİKKAT! Select tuşu tuzaklı 3 pininden sökülüp güvenli 21 pinine alındı!
 #define RG_GAMEPAD_GPIO_MAP { \
-    {RG_KEY_SELECT, .num = GPIO_NUM_3,  .pullup = 1, .level = 0}, \
+    {RG_KEY_SELECT, .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_8,  .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
