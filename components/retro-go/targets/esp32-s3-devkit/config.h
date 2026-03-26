@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.19)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.20)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Millivolt Deadzone Shield (Anti-Ghost Input), 100% KynexOS Axis Sync
+ * Özellikler: Iron Shield Deadzone (0-800 / 3200-4096), Perfect Axis Translation
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -57,19 +57,18 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - THE VOLT-SHIELD
-// KynexOS ile %100 aynı yönler. Milivolt (mV) parazitleri yalıtıldı.
-// Sol Joy(J1) Yönler: Pin 4(CH3) X Ekseni, Pin 6(CH5) Y Ekseni.
-// Sağ Joy(J2) Butonlar: Pin 7(CH6) Y/A Butonu, Pin 15(CH4) X/B Butonu.
+// ANALOG JOYSTICK - THE IRON SHIELD
+// Limitler 4096 tavanına göre betonlaştırıldı. 
+// Merkez parazitleri %100 yalıtıldı.
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 800},     \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 2400, 3300}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3200, 4096}, \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 800},     \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 2400, 3300}, \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3200, 4096}, \
     {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 800},     \
-    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 2400, 3300}, \
+    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3200, 4096}, \
     {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 800},     \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 2400, 3300}  \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3200, 4096}  \
 }
 
 // DİJİTAL BUTONLAR
