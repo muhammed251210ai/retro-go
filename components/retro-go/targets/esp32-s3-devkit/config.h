@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.15)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.16)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: SPI Cache Panic Fix (One-time map read), I2S Audio Fix, Inverted J2
+ * Özellikler: Joystick Deadzone Fix (Anti-Recovery), FFAT Storage Link
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -20,10 +20,9 @@
 // STORAGE
 #define RG_STORAGE_DRIVER           2              
 #define RG_STORAGE_ROOT             "/sd"          
-#define RG_STORAGE_FLASH_PARTITION  "storage"      
+#define RG_STORAGE_FLASH_PARTITION  "ffat"      // MUHAMMED: Kilit nokta! "storage" değil "ffat" olmalı.
 
 // AUDIO (MAX98357A I2S) 
-// MUHAMMED: Sesin Retro-Go'da çalışması için I2S ve EXT_DAC bayrakları BİRLİKTE aktif edildi!
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_USE_I2S            1   
@@ -59,16 +58,17 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - Sağ Joystick (A,B,X,Y) Tam Tersine Çevrildi
+// ANALOG JOYSTICK - Ölü Bölge (Deadzone) Genişletildi! (600 ve 3400 sınırları)
+// Bu sayede joystick boşta dururken sisteme "tuşa basılıyor" sinyali göndermez.
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}  \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 600},    \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3400, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3400, 4096}, \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 600},    \
+    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 600},    \
+    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3400, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 600},    \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3400, 4096}  \
 }
 
 // DİJİTAL BUTONLAR
@@ -83,16 +83,12 @@ static inline void kynex_flawless_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
     gpio_pullup_en(GPIO_NUM_0);
     
-    // MUHAMMED: CRASH ÇÖZÜMÜ! Harita sadece sistem başlarken 1 KERE okunur.
-    // Oyun açıkken Flash belleği meşgul etmez, bu yüzden Recovery Mod'a (Crash) düşmez!
     const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
     
     int hold_timer = 0;
     while(1) {
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
             hold_timer++;
-            
-            // 1.5 Saniye dolduğunda (15 * 100ms)
             if(hold_timer >= 15) { 
                 if(target != NULL) { 
                     esp_ota_set_boot_partition(target); 
@@ -104,8 +100,6 @@ static inline void kynex_flawless_switch_task(void *arg) {
         } else { 
             hold_timer = 0; 
         }
-        
-        // İşlemciyi yormamak ve emülatöre tam güç vermek için 50ms yerine 100ms bekletiyoruz
         vTaskDelay(pdMS_TO_TICKS(100)); 
     }
 }
