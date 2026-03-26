@@ -1,7 +1,7 @@
 # **************************************************************************
-# * Kynex Sovereign - The Hijacker Dockerfile v306.2
+# * Kynex Sovereign - The Hijacker Dockerfile v306.3
 # * Geliştirici: Muhammed (Kynex)
-# * Görev: 0x410000 Başlangıçlı Yeni Harita ve Sadece Uygulamaları Birleştirme!
+# * Görev: 0x410000 Referanslı Göreceli (Relative) Birleştirme!
 # **************************************************************************
 FROM espressif/idf:release-v4.4
 WORKDIR /app
@@ -32,16 +32,17 @@ RUN . /opt/esp/idf/export.sh && \
     python3 $IDF_PATH/components/partition_table/gen_esp32part.py kynex_map.csv /kynex_out/kynex_partitions.bin && \
     find build -name "bootloader.bin" -exec cp {} /kynex_out/kynex_bootloader.bin \; || true
 
-# Diğer Çıktıları Topla (Güvenlik İçin Tam Dosyalar - BİRLEŞTİRMEDEN ÖNCE EKLENİYOR!)
+# Diğer Çıktıları Topla (Güvenlik İçin Tam Dosyalar)
 RUN find . -maxdepth 3 -name "*.img" -exec cp {} /kynex_out/kynex_full_system.img \; || true && \
     find . -name "*.bin" -exec cp {} /kynex_out/ \; || true
 
-# MUHAMMED: SADECE Launcher ve Core'ları 0x410000 Referansıyla Birleştir
+# MUHAMMED: DİKKAT! GÖRECELİ (RELATIVE) BİRLEŞTİRME YAPILIYOR!
+# Bu dosya 0x410000 adresine yazılacağı için başlangıç ofseti 0x000000 kabul edilmiştir.
 RUN . /opt/esp/idf/export.sh && \
     cd /kynex_out && \
     esptool.py --chip esp32s3 merge_bin -o kynex_apps_combined.bin \
-    0x410000 launcher.bin \
-    0x510000 retro-core.bin \
-    0x610000 prboom-go.bin \
-    0x6d0000 gwenesis.bin \
-    0x7d0000 fmsx.bin || true
+    0x000000 launcher.bin \
+    0x100000 retro-core.bin \
+    0x200000 prboom-go.bin \
+    0x2c0000 gwenesis.bin \
+    0x3c0000 fmsx.bin || true
