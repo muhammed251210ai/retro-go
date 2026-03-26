@@ -16,7 +16,7 @@ jobs:
           mkdir -p output
           docker cp kynex_final:/kynex_out/. ./output/
           docker rm kynex_final
-      - name: Kynex Sovereign Paketi (Bootloader, Partitions, Corelar Ayri)
+      - name: Kynex Sovereign Paketi (Full IMG Dahil)
         uses: actions/upload-artifact@v4
         with:
           name: Kynex_Sovereign_V294_FINAL
