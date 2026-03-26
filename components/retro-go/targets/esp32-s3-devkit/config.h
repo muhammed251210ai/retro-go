@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.12)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.13)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Hardware Conflict Resolved, Safe Pin Mapping, Crash-Free OTA
+ * Özellikler: Twin-Matrix Joystick Sync (100% Match with KynexOS), I2S Audio Fix
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -22,9 +22,10 @@
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO (MAX98357A I2S) - MUHAMMED: ÇAKIŞMASIZ ZAFER PİNLERİ
+// AUDIO (MAX98357A I2S) - MUHAMMED: SES MOTORU UYANDIRILDI VE EŞLENDİ
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
+#define RG_AUDIO_USE_I2S            1              // SESİ AÇAN ANAHTAR
 #define RG_AUDIO_DRIVER             1               
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_17     
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_18     
@@ -32,6 +33,7 @@
 #define RG_AUDIO_I2S_MONO           1               
 #define RG_AUDIO_VOLUME_DEFAULT     100             
 #define RG_AUDIO_I2S_PORT           I2S_NUM_0
+#define RG_AUDIO_I2S_SAMPLES        512            // KYNEXOS ILE AYNI BUFFER
 
 // VIDEO & BACKLIGHT
 #define RG_SCREEN_DRIVER            0   
@@ -57,16 +59,18 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - MUHAMMED: Joy1 Y Ekseni Pin 6'ya (ADC_CHANNEL_5) Alındı
+// ANALOG JOYSTICK - MUHAMMED: KYNEXOS İLE BİREBİR MATRİS EŞLEŞTİRMESİ
+// Sol Joystick (J1) Yön Tuşları: Pin 6 (CH5) ve Pin 4 (CH3)
+// Sağ Joystick (J2) Aksiyon Tuşları (A, B, X, Y): Pin 7 (CH6) ve Pin 15 (CH4 - ADC2)
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}  \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000}     \
 }
 
 // DİJİTAL BUTONLAR - MUHAMMED: Select(3) ve Start(8) güvenli pinlere alındı!
