@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.18)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.19)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: JTAG Pin (GPIO3) Bypassed -> GPIO21, Pure I2S Audio, Anti-Crash Deadzone
+ * Özellikler: Millivolt Deadzone Shield (Anti-Ghost Input), 100% KynexOS Axis Sync
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -22,13 +22,16 @@
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "ffat"      
 
-// AUDIO (MAX98357A I2S) 
+// AUDIO (MAX98357A I2S)
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
-#define RG_AUDIO_USE_I2S            1   
+#define RG_AUDIO_DRIVER             1               
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_17     
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_18     
 #define RG_GPIO_SND_I2S_DATA        GPIO_NUM_5      
+#define RG_AUDIO_I2S_MONO           1               
+#define RG_AUDIO_VOLUME_DEFAULT     100             
+#define RG_AUDIO_I2S_PORT           I2S_NUM_0
 
 // VIDEO & BACKLIGHT
 #define RG_SCREEN_DRIVER            0   
@@ -54,20 +57,22 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - KUSURSUZ ÖLÜ BÖLGE 
+// ANALOG JOYSTICK - THE VOLT-SHIELD
+// KynexOS ile %100 aynı yönler. Milivolt (mV) parazitleri yalıtıldı.
+// Sol Joy(J1) Yönler: Pin 4(CH3) X Ekseni, Pin 6(CH5) Y Ekseni.
+// Sağ Joy(J2) Butonlar: Pin 7(CH6) Y/A Butonu, Pin 15(CH4) X/B Butonu.
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 200},    \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3800, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3800, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 200},    \
-    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 200},    \
-    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3800, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 200},    \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3800, 4096}  \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 2400, 3300}, \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 2400, 3300}, \
+    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 2400, 3300}, \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 2400, 3300}  \
 }
 
 // DİJİTAL BUTONLAR
-// MUHAMMED: DİKKAT! Select tuşu tuzaklı 3 pininden sökülüp güvenli 21 pinine alındı!
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_8,  .pullup = 1, .level = 0}, \
