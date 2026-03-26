@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.14)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.15)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: J2 Axis Inverted, Audio Init Fixed, Crash-Free Watchdog Fix
+ * Özellikler: SPI Cache Panic Fix (One-time map read), I2S Audio Fix, Inverted J2
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -23,9 +23,10 @@
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
 // AUDIO (MAX98357A I2S) 
-// MUHAMMED: Uyumsuz komutlar silindi, orijinal Retro-Go standartı eklendi.
+// MUHAMMED: Sesin Retro-Go'da çalışması için I2S ve EXT_DAC bayrakları BİRLİKTE aktif edildi!
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
+#define RG_AUDIO_USE_I2S            1   
 #define RG_AUDIO_DRIVER             1               
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_17     
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_18     
@@ -58,7 +59,7 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - MUHAMMED: Sağ Joystick (A,B,X,Y) Tam Tersine Çevrildi!
+// ANALOG JOYSTICK - Sağ Joystick (A,B,X,Y) Tam Tersine Çevrildi
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3000, 4096}, \
@@ -77,26 +78,26 @@
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// SİSTEM GEÇİŞ GÖREVİ (MUHAMMED: Crash / Recovery Fix Uygulandı!)
+// SİSTEM GEÇİŞ GÖREVİ
 static inline void kynex_flawless_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
     gpio_pullup_en(GPIO_NUM_0);
+    
+    // MUHAMMED: CRASH ÇÖZÜMÜ! Harita sadece sistem başlarken 1 KERE okunur.
+    // Oyun açıkken Flash belleği meşgul etmez, bu yüzden Recovery Mod'a (Crash) düşmez!
+    const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
     
     int hold_timer = 0;
     while(1) {
         if(gpio_get_level(GPIO_NUM_0) == 0) { 
             hold_timer++;
             
-            // 1.5 Saniye dolduğunda (30 * 50ms)
-            if(hold_timer >= 30) { 
-                const esp_partition_t* target = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+            // 1.5 Saniye dolduğunda (15 * 100ms)
+            if(hold_timer >= 15) { 
                 if(target != NULL) { 
-                    // Flaşa yazma işlemi artık sistemi dondurmayacak!
                     esp_ota_set_boot_partition(target); 
-                    vTaskDelay(pdMS_TO_TICKS(100)); // Flaşın yazmayı bitirmesi için küçük bir zaman tanı
                     esp_restart(); 
                 } else {
-                    // Eğer harita hatası varsa kendini sıfırla
                     esp_restart(); 
                 }
             }
@@ -104,12 +105,11 @@ static inline void kynex_flawless_switch_task(void *arg) {
             hold_timer = 0; 
         }
         
-        // Görevin diğer işlemleri (flash yazma vb.) engellememesi için 50ms bekle
-        vTaskDelay(pdMS_TO_TICKS(50)); 
+        // İşlemciyi yormamak ve emülatöre tam güç vermek için 50ms yerine 100ms bekletiyoruz
+        vTaskDelay(pdMS_TO_TICKS(100)); 
     }
 }
 
-// MUHAMMED: Görev çekirdeğe kilitlenmedi ve önceliği düşürüldü. (Oyun esnasında çökmeyi tamamen önler)
 #define RG_TARGET_INIT() xTaskCreate(kynex_flawless_switch_task, "k_flawless", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
