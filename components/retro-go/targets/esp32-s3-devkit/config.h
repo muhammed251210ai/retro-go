@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.13)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.14)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Twin-Matrix Joystick Sync (100% Match with KynexOS), I2S Audio Fix
+ * Özellikler: J2 Axis Inverted, Audio Init Fixed, Crash-Free Watchdog Fix
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -22,10 +22,10 @@
 #define RG_STORAGE_ROOT             "/sd"          
 #define RG_STORAGE_FLASH_PARTITION  "storage"      
 
-// AUDIO (MAX98357A I2S) - MUHAMMED: SES MOTORU UYANDIRILDI VE EŞLENDİ
+// AUDIO (MAX98357A I2S) 
+// MUHAMMED: Uyumsuz komutlar silindi, orijinal Retro-Go standartı eklendi.
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
-#define RG_AUDIO_USE_I2S            1              // SESİ AÇAN ANAHTAR
 #define RG_AUDIO_DRIVER             1               
 #define RG_GPIO_SND_I2S_BCK         GPIO_NUM_17     
 #define RG_GPIO_SND_I2S_WS          GPIO_NUM_18     
@@ -33,7 +33,6 @@
 #define RG_AUDIO_I2S_MONO           1               
 #define RG_AUDIO_VOLUME_DEFAULT     100             
 #define RG_AUDIO_I2S_PORT           I2S_NUM_0
-#define RG_AUDIO_I2S_SAMPLES        512            // KYNEXOS ILE AYNI BUFFER
 
 // VIDEO & BACKLIGHT
 #define RG_SCREEN_DRIVER            0   
@@ -59,28 +58,26 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - MUHAMMED: KYNEXOS İLE BİREBİR MATRİS EŞLEŞTİRMESİ
-// Sol Joystick (J1) Yön Tuşları: Pin 6 (CH5) ve Pin 4 (CH3)
-// Sağ Joystick (J2) Aksiyon Tuşları (A, B, X, Y): Pin 7 (CH6) ve Pin 15 (CH4 - ADC2)
+// ANALOG JOYSTICK - MUHAMMED: Sağ Joystick (A,B,X,Y) Tam Tersine Çevrildi!
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 1000},    \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3000, 4096}, \
     {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
     {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000}     \
+    {RG_KEY_X,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_B,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}  \
 }
 
-// DİJİTAL BUTONLAR - MUHAMMED: Select(3) ve Start(8) güvenli pinlere alındı!
+// DİJİTAL BUTONLAR
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_3,  .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_8,  .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
-// SİSTEM GEÇİŞ GÖREVİ (DONMASIZ VE GÜVENLİ)
+// SİSTEM GEÇİŞ GÖREVİ (MUHAMMED: Crash / Recovery Fix Uygulandı!)
 static inline void kynex_flawless_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
     gpio_pullup_en(GPIO_NUM_0);
@@ -112,7 +109,7 @@ static inline void kynex_flawless_switch_task(void *arg) {
     }
 }
 
-// Görevi yüksek öncelik (20) ile Ana Çekirdeğe (Core 0) sabitliyoruz
-#define RG_TARGET_INIT() xTaskCreatePinnedToCore(kynex_flawless_switch_task, "k_flawless", 2048, NULL, 20, NULL, 0);
+// MUHAMMED: Görev çekirdeğe kilitlenmedi ve önceliği düşürüldü. (Oyun esnasında çökmeyi tamamen önler)
+#define RG_TARGET_INIT() xTaskCreate(kynex_flawless_switch_task, "k_flawless", 2048, NULL, 5, NULL);
 
 #endif /* _RG_TARGET_CONFIG_H_ */
