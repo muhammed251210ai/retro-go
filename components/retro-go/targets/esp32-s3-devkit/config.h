@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.20)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.21)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Iron Shield Deadzone (0-800 / 3200-4096), Perfect Axis Translation
+ * Özellikler: ADC2 Wi-Fi Conflict Bypass (Pin 15 -> Pin 8), Flawless Axis Sync
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -57,24 +57,24 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - THE IRON SHIELD
-// Limitler 4096 tavanına göre betonlaştırıldı. 
-// Merkez parazitleri %100 yalıtıldı.
+// ANALOG JOYSTICK - THE WI-FI BYPASS
+// MUHAMMED: Tüm Analog eksenler ADC_UNIT_1'e (Wi-Fi Korumalı Alana) taşındı!
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 800},     \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3200, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 2400, 3300}, \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 800},     \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3200, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 800},     \
-    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 3200, 4096}, \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 800},     \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3200, 4096}  \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 2400, 3300}, \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 2400, 3300}, \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 2400, 3300}  \
 }
 
 // DİJİTAL BUTONLAR
+// MUHAMMED: Start tuşu 8'den 15'e alındı. Select 21'de güvenli.
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
-    {RG_KEY_START,  .num = GPIO_NUM_8,  .pullup = 1, .level = 0}, \
+    {RG_KEY_START,  .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
