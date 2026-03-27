@@ -1,7 +1,7 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.29)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.31)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Pin 15 Start Trap Resolved, 3000mV Accessible High-Limit, KynexOS Mirror
- * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
+ * Özellikler: Breadboard Noise Filter (500-3500 Deadzone), Perfect Axis Sync
+ * Donanım: ESP32-S3 N16R8 + MAX98357A I2S (Breadboard & Cardboard Edition)
  */
 
 #ifndef _RG_TARGET_CONFIG_H_
@@ -54,22 +54,21 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - KUSURSUZ EŞLEŞME VE ULAŞILABİLİR ZIRH
-// Tavan limiti 3000'e çekilerek hem ulaşılabilir yapıldı hem hayalet basmalar yok edildi.
-// Sağ joystick'in A ve Y tuşları, Start butonu ile çakışmasın diye Pin 8'e (ADC_CH7) alındı!
+// ANALOG JOYSTICK - BREADBOARD PARAZİT ZIRHI!
+// MUHAMMED: Temassızlık ve Breadboard parazitlerini yok etmek için sınırlar uç noktalara (500 ve 3500) çekildi!
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 300},     \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 300},     \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 300},     \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 300},     \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 3000, 4096}  \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 500},     \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3500, 4096}, \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 500},     \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3500, 4096}, \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 500},     \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 3500, 4096}, \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 500},     \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3500, 4096}  \
 }
 
 // DİJİTAL BUTONLAR
-// MUHAMMED: Doğru fiziksel şema! Start -> 15, Select -> 21
+// Pin 15: Start | Pin 21: Select | Pin 0: Menu
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
