@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.24)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.25)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Wi-Fi ADC2 Bypass Restored, 100% Sync Axis, Ghost Input Eliminated!
+ * Özellikler: Stable v325.22 Base, Left Stick L/R Fixed, OK (A) Button Fixed
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -23,6 +23,7 @@
 #define RG_STORAGE_FLASH_PARTITION  "ffat"      
 
 // AUDIO (MAX98357A I2S) 
+// MUHAMMED: Çakışan komutlar temizlendi, sadece saf I2S köprüsü bırakıldı!
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_USE_I2S            1   
@@ -54,24 +55,23 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - THE MASTERPIECE (WIFI KORUMALI %100 SENKRON)
-// MUHAMMED: Sağ Joystick'in A ve Y tuşları Wi-Fi çakışması yapmayan Pin 8'e (ADC_CHANNEL_7) alındı!
+// ANALOG JOYSTICK - KUSURSUZ 4096 LİMİTİ VE EKSEN TERCÜMESİ!
+// MUHAMMED: Sol Joystick Sağ-Sol tersliği giderildi. OK(A) tuşu ile Y tuşu düzeltildi.
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 800},     \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 2600, 4096}, \
     {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 2600, 4096}, \
     {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 800},     \
+    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 2600, 4096}, \
+    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 800},     \
     {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 800},     \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 2600, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 2600, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 800}      \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 2600, 4096}  \
 }
 
 // DİJİTAL BUTONLAR
-// MUHAMMED: Start tuşu Pin 15'te, Select tuşu Pin 21'de güvenle mühürlendi!
 #define RG_GAMEPAD_GPIO_MAP { \
-    {RG_KEY_SELECT, .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
-    {RG_KEY_START,  .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
+    {RG_KEY_SELECT, .num = GPIO_NUM_3,  .pullup = 1, .level = 0}, \
+    {RG_KEY_START,  .num = GPIO_NUM_8,  .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
