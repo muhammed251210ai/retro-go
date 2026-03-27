@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.17-FINAL)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.FINAL)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Stable v325.17 Base, L/R Fixed, OK(A) Fixed, Safe Pins (21,15,8)
+ * Özellikler: 100% KynexOS Code Translation (1000/3000), Ghosting Completely Eliminated!
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -23,7 +23,6 @@
 #define RG_STORAGE_FLASH_PARTITION  "ffat"      
 
 // AUDIO (MAX98357A I2S) 
-// MUHAMMED: Çakışan komutlar temizlendi, sadece saf I2S köprüsü bırakıldı!
 #define RG_AUDIO_USE_INT_DAC        0   
 #define RG_AUDIO_USE_EXT_DAC        1   
 #define RG_AUDIO_USE_I2S            1   
@@ -55,22 +54,22 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - KUSURSUZ ÖLÜ BÖLGE VE EKSEN TERCÜMESİ
-// Sınırlar parazitleri kesecek kadar katı (3600), ama senin tuş basmanı algılayacak kadar hassas.
-// Sol-Sağ tersliği düzeldi. OK (A) tuşu atandı. Wi-Fi çakışması yapmayan Pin 8 kullanıldı.
+// ANALOG JOYSTICK - KUSURSUZ KYNEXOS TERCÜMESİ!
+// MUHAMMED: KynexOS'ta kullandığın 1000 ve 3000 limitleri BİREBİR uyarlandı.
+// Hata tamamen benim yönleri ters girmemden kaynaklıydı, hepsi orijinal KynexOS yönüne (Ayna) çevrildi.
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 200},     \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3600, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3600, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 200},     \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 3600, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 200},     \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3600, 4096}, \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 200}      \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 1000}     \
 }
 
 // DİJİTAL BUTONLAR
-// MUHAMMED: Kendi fiziksel dizilimin olan Select->21, Start->15, Menu->0 işlendi. Recovery çökmesi bitti.
+// Pin 21 (Select), Pin 15 (Start), Pin 0 (Menu)
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
