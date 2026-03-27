@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.23)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.24)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: 100% KynexOS Matrix Mirror, OK (A) Button Fix, GPIO21 Select Bypass
+ * Özellikler: Wi-Fi ADC2 Bypass Restored, 100% Sync Axis, Ghost Input Eliminated!
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -54,8 +54,8 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - KUSURSUZ 100% SENKRONİZASYON!
-// MUHAMMED: Sol-Sağ tersliği düzeldi. OK(A) tuşu tam yerine (Sağ J2-Sağ Yön) alındı.
+// ANALOG JOYSTICK - THE MASTERPIECE (WIFI KORUMALI %100 SENKRON)
+// MUHAMMED: Sağ Joystick'in A ve Y tuşları Wi-Fi çakışması yapmayan Pin 8'e (ADC_CHANNEL_7) alındı!
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 800},     \
     {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 2600, 4096}, \
@@ -63,15 +63,15 @@
     {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 800},     \
     {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 800},     \
     {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 2600, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 2600, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_2, ADC_CHANNEL_4, ADC_ATTEN_DB_11, 0, 800}      \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 2600, 4096}, \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 800}      \
 }
 
 // DİJİTAL BUTONLAR
-// MUHAMMED: Select tuşu Crash(Çökme) yapmasın diye güvenli 21. pine mühürlendi!
+// MUHAMMED: Start tuşu Pin 15'te, Select tuşu Pin 21'de güvenle mühürlendi!
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
-    {RG_KEY_START,  .num = GPIO_NUM_8,  .pullup = 1, .level = 0}, \
+    {RG_KEY_START,  .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
     {RG_KEY_MENU,   .num = GPIO_NUM_0,  .pullup = 1, .level = 0}, \
 }
 
