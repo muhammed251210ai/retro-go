@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.28)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.29)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: Titanium Deadzone (0-300 / 3700-4096), Pin 8/15 Fix, Flawless Axis
+ * Özellikler: Pin 15 Start Trap Resolved, 3000mV Accessible High-Limit, KynexOS Mirror
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -54,22 +54,22 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - TİTANYUM ÖLÜ BÖLGE ZIRHI!
-// MUHAMMED: Limiti 300 ve 3700 yaparak hayalet basmaları %100 yok ettik.
-// Sol-Sağ ekseni tam istediğin gibi düzeltildi (Ters çevrildi).
+// ANALOG JOYSTICK - KUSURSUZ EŞLEŞME VE ULAŞILABİLİR ZIRH
+// Tavan limiti 3000'e çekilerek hem ulaşılabilir yapıldı hem hayalet basmalar yok edildi.
+// Sağ joystick'in A ve Y tuşları, Start butonu ile çakışmasın diye Pin 8'e (ADC_CH7) alındı!
 #define RG_GAMEPAD_ADC_MAP { \
     {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 300},     \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3700, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 300},     \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3700, 4096}, \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 300},     \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
     {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 300},     \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3700, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 300},     \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 3700, 4096}  \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 300},     \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 3000, 4096}  \
 }
 
 // DİJİTAL BUTONLAR
-// MUHAMMED: Start tuşu dijital, Pin 15'te. Sağ Y (Analog) Pin 8'de. Select Pin 21'de.
+// MUHAMMED: Doğru fiziksel şema! Start -> 15, Select -> 21
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
