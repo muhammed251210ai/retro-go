@@ -1,6 +1,6 @@
-/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.FINAL)
+/* * RetroGo Configuration - Kynex Sovereign Flawless Bridge (v325.ULTIMATE)
  * Geliştirici: Muhammed (Kynex)
- * Özellikler: 100% KynexOS Code Translation (1000/3000), Ghosting Completely Eliminated!
+ * Özellikler: Ironclad Deadzone (500/2600mV), Safe Pins (21,15,8), KynexOS Switch
  * Donanım: ESP32-S3 N16R8 + MAX98357A I2S
  */
 
@@ -54,23 +54,22 @@
     ILI9341_CMD(0xB6, 0x08, 0x82, 0x27); \
 } while(0)
 
-// ANALOG JOYSTICK - KUSURSUZ KYNEXOS TERCÜMESİ!
-// MUHAMMED: KynexOS'ta kullandığın 1000 ve 3000 limitleri BİREBİR uyarlandı.
-// Hata tamamen benim yönleri ters girmemden kaynaklıydı, hepsi orijinal KynexOS yönüne (Ayna) çevrildi.
+// ANALOG JOYSTICK - DEMİR ZIRH (BREADBOARD PARAZİT KORUMASI)
+// Parazitlerin sistemi çıldırtmasını engellemek için sınırlar 500 ve 2600'e kilitlendi!
+// KynexOS yön (ayna) matematiği ile %100 senkronize edildi.
 #define RG_GAMEPAD_ADC_MAP { \
-    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 1000},    \
-    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 3000, 4096}, \
-    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 1000}     \
+    {RG_KEY_UP,    ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 0, 500},     \
+    {RG_KEY_DOWN,  ADC_UNIT_1, ADC_CHANNEL_5, ADC_ATTEN_DB_11, 2600, 3300}, \
+    {RG_KEY_RIGHT, ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 0, 500},     \
+    {RG_KEY_LEFT,  ADC_UNIT_1, ADC_CHANNEL_3, ADC_ATTEN_DB_11, 2600, 3300}, \
+    {RG_KEY_X,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 0, 500},     \
+    {RG_KEY_B,     ADC_UNIT_1, ADC_CHANNEL_6, ADC_ATTEN_DB_11, 2600, 3300}, \
+    {RG_KEY_A,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 0, 500},     \
+    {RG_KEY_Y,     ADC_UNIT_1, ADC_CHANNEL_7, ADC_ATTEN_DB_11, 2600, 3300}  \
 }
 
 // DİJİTAL BUTONLAR
-// MUHAMMED: Pin 0 SADECE Menü (Kısa Basım) ve KynexOS Geçişi (Uzun Basım) içindir!
-// Pin 21 (Select), Pin 15 (Start)
+// Pin 21 (Select) | Pin 15 (Start) | Pin 0 (Retro-Go Menüsü ve KynexOS Geçişi)
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
@@ -78,7 +77,7 @@
 }
 
 // SİSTEM GEÇİŞ GÖREVİ
-// MUHAMMED: 0. Pin 15 tur (1.5 saniye) basılı tutulursa KynexOS'a zorla geçiş yapar.
+// 0. Pin 1.5 saniye basılı tutulursa Retro-Go'yu dondurup KynexOS'a geçer.
 static inline void kynex_flawless_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
     gpio_pullup_en(GPIO_NUM_0);
