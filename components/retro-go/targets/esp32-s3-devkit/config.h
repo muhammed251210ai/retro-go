@@ -69,7 +69,8 @@
 }
 
 // DİJİTAL BUTONLAR
-// Pin 21 (Select), Pin 15 (Start), Pin 0 (Menu)
+// MUHAMMED: Pin 0 SADECE Menü (Kısa Basım) ve KynexOS Geçişi (Uzun Basım) içindir!
+// Pin 21 (Select), Pin 15 (Start)
 #define RG_GAMEPAD_GPIO_MAP { \
     {RG_KEY_SELECT, .num = GPIO_NUM_21, .pullup = 1, .level = 0}, \
     {RG_KEY_START,  .num = GPIO_NUM_15, .pullup = 1, .level = 0}, \
@@ -77,6 +78,7 @@
 }
 
 // SİSTEM GEÇİŞ GÖREVİ
+// MUHAMMED: 0. Pin 15 tur (1.5 saniye) basılı tutulursa KynexOS'a zorla geçiş yapar.
 static inline void kynex_flawless_switch_task(void *arg) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
     gpio_pullup_en(GPIO_NUM_0);
